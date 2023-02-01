@@ -20,7 +20,7 @@ class SigninScreen extends ConsumerWidget {
                   children: [
                     Container(
                       margin: const EdgeInsets.only(top: 103, bottom: 20),
-                      child: Image.asset('images/logo-transparent.png',
+                      child: Image.asset('assets/LogoGame/logo-transparent.png',
                           width: 300),
                     ),
                     const Text(

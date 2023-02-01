@@ -121,7 +121,7 @@ class AttentionScreen extends ConsumerWidget {
                         },
                         child: const CustomStack(
                           image: 'assets/LogoGame/game_attention1.png',
-                          icon: 'images/game_attention1.png',
+                          icon: 'assets/LogoGame/game_attention1.png',
                           text1: 'Tim kiếm',
                           text2: '40 màn',
                           padding_left: 7,
@@ -138,7 +138,7 @@ class AttentionScreen extends ConsumerWidget {
                       },
                       child: const CustomStack(
                         image: 'assets/LogoGame/game_attention2.png',
-                        icon: 'images/game_attention2.png',
+                        icon: 'assets/LogoGame/game_attention2.png',
                         text1: 'Bắt cặp',
                         text2: '10 Cấp độ',
                         padding_left: 5,

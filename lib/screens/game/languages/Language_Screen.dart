@@ -122,7 +122,7 @@ class LanguageScreen extends ConsumerWidget {
                         },
                         child: const CustomStack(
                           image: 'assets/LogoGame/game_languages1.png',
-                          icon: 'images/game_languages1.png',
+                          icon: 'assets/LogoGame/game_languages1.png',
                           text1: 'Tìm từ bắt đầu với',
                           text2: '',
                           padding_left: 5,
@@ -139,7 +139,7 @@ class LanguageScreen extends ConsumerWidget {
                       },
                       child: const CustomStack(
                         image: 'assets/LogoGame/game_languages2.png',
-                        icon: 'images/game_languages2.png',
+                        icon: 'assets/LogoGame/game_languages2.png',
                         text1: 'Tìm từ tiếp theo',
                         text2: '',
                         padding_left: 7,
@@ -155,7 +155,7 @@ class LanguageScreen extends ConsumerWidget {
                       },
                       child: const CustomStack(
                         image: 'assets/LogoGame/game_languages3.png',
-                        icon: 'images/game_languages3.png',
+                        icon: 'assets/LogoGame/game_languages3.png',
                         text1: 'Nối Từ',
                         text2: '',
                         padding_left: 7,
@@ -171,7 +171,7 @@ class LanguageScreen extends ConsumerWidget {
                       },
                       child: const CustomStack(
                         image: 'assets/LogoGame/game_languages4.png',
-                        icon: 'images/game_languages4.png',
+                        icon: 'assets/LogoGame/game_languages4.png',
                         text1: 'Sắp xếp từ',
                         text2: '',
                         padding_left: 7,

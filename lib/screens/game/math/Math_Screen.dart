@@ -123,7 +123,7 @@ class MathScreen extends ConsumerWidget {
                         },
                         child: const CustomStack(
                           image: 'assets/LogoGame/shoping-math-game.jpg',
-                          icon: 'images/shoping-math-game-icon.jpg',
+                          icon: 'assets/LogoGame/shoping-math-game-icon.jpg',
                           text1: 'Trò Chơi Mua Sắm',
                           text2: 'Chọn sản phẩm có giá ít hơn',
                           padding_left: 5,
@@ -141,7 +141,7 @@ class MathScreen extends ConsumerWidget {
                       },
                       child: const CustomStack(
                         image: 'assets/LogoGame/plus-math-game-background.png',
-                        icon: 'images/plus-math-game-icon.png',
+                        icon: 'assets/LogoGame/plus-math-game-icon.png',
                         text1: 'Trò Chơi Tìm Tổng',
                         text2: 'Tìm tổng 2 số theo yêu cầu',
                         padding_left: 7,

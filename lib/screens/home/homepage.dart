@@ -121,7 +121,7 @@ class Homepage extends ConsumerWidget {
                         },
                         child: const CustomStack(
                           image: 'assets/LogoGame/language-background.jpg',
-                          icon: 'images/language-icon.jpg',
+                          icon: 'assets/LogoGame/language-icon.jpg',
                           text1: 'Trò Chơi Ngôn Ngữ',
                           text2: '4 Trò Chơi',
                           padding_left: 5,
@@ -138,7 +138,7 @@ class Homepage extends ConsumerWidget {
                       },
                       child: const CustomStack(
                         image: 'assets/LogoGame/attention-background.png',
-                        icon: 'images/attention-icon.png',
+                        icon: 'assets/LogoGame/attention-icon.png',
                         text1: 'Trò Chơi Tập Trung',
                         text2: '4 Trò Chơi',
                         padding_left: 7,
@@ -154,7 +154,7 @@ class Homepage extends ConsumerWidget {
                       },
                       child: const CustomStack(
                         image: 'assets/LogoGame/memory-background.png',
-                        icon: 'images/memory.png',
+                        icon: 'assets/LogoGame/memory.png',
                         text1: 'Trò Chơi Ghi Nhớ',
                         text2: '4 Trò Chơi',
                         padding_left: 4,
@@ -170,7 +170,7 @@ class Homepage extends ConsumerWidget {
                       },
                       child: const CustomStack(
                         image: 'assets/LogoGame/math-background.png',
-                        icon: 'images/math-icon.jpg',
+                        icon: 'assets/LogoGame/math-icon.jpg',
                         text1: 'Trò Chơi Tính Toán',
                         text2: '2 Trò Chơi',
                         padding_left: 8,

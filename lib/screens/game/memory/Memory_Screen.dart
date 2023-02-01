@@ -121,7 +121,7 @@ class MemoryScreen extends ConsumerWidget {
                         },
                         child: const CustomStack(
                           image: 'assets/LogoGame/game_memory1.png',
-                          icon: 'images/game_memory1.png',
+                          icon: 'assets/LogoGame/game_memory1.png',
                           text1: 'Ghi nhớ màu',
                           text2: '4 Trò Chơi',
                           padding_left: 5,
@@ -138,7 +138,7 @@ class MemoryScreen extends ConsumerWidget {
                       },
                       child: const CustomStack(
                         image: 'assets/LogoGame/game_memory2.png',
-                        icon: 'images/game_memory2.png',
+                        icon: 'assets/LogoGame/game_memory2.png',
                         text1: 'Tìm hình mới',
                         text2: '4 Trò Chơi',
                         padding_left: 7,
@@ -154,7 +154,7 @@ class MemoryScreen extends ConsumerWidget {
                       },
                       child: const CustomStack(
                         image: 'assets/LogoGame/game_memory3.png',
-                        icon: 'images/game_memory3.png',
+                        icon: 'assets/LogoGame/game_memory3.png',
                         text1: 'Đó là hình nào',
                         text2: '4 Trò Chơi',
                         padding_left: 7,
