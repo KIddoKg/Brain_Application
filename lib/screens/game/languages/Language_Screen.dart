@@ -121,7 +121,7 @@ class LanguageScreen extends ConsumerWidget {
                           cout = 1;
                         },
                         child: const CustomStack(
-                          image: 'images/game_languages1.png',
+                          image: 'assets/LogoGame/game_languages1.png',
                           icon: 'images/game_languages1.png',
                           text1: 'Tìm từ bắt đầu với',
                           text2: '',
@@ -138,7 +138,7 @@ class LanguageScreen extends ConsumerWidget {
                             .pushNamed(RouteGenerator.gameWord);
                       },
                       child: const CustomStack(
-                        image: 'images/game_languages2.png',
+                        image: 'assets/LogoGame/game_languages2.png',
                         icon: 'images/game_languages2.png',
                         text1: 'Tìm từ tiếp theo',
                         text2: '',
@@ -154,7 +154,7 @@ class LanguageScreen extends ConsumerWidget {
                             .pushNamed(RouteGenerator.gameConj);
                       },
                       child: const CustomStack(
-                        image: 'images/game_languages3.png',
+                        image: 'assets/LogoGame/game_languages3.png',
                         icon: 'images/game_languages3.png',
                         text1: 'Nối Từ',
                         text2: '',
@@ -170,7 +170,7 @@ class LanguageScreen extends ConsumerWidget {
                             .pushNamed(RouteGenerator.gameSort);
                       },
                       child: const CustomStack(
-                        image: 'images/game_languages4.png',
+                        image: 'assets/LogoGame/game_languages4.png',
                         icon: 'images/game_languages4.png',
                         text1: 'Sắp xếp từ',
                         text2: '',

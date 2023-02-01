@@ -120,7 +120,7 @@ class AttentionScreen extends ConsumerWidget {
                               .pushNamed(RouteGenerator.game1Atten);
                         },
                         child: const CustomStack(
-                          image: 'images/game_attention1.png',
+                          image: 'assets/LogoGame/game_attention1.png',
                           icon: 'images/game_attention1.png',
                           text1: 'Tim kiếm',
                           text2: '40 màn',
@@ -137,7 +137,7 @@ class AttentionScreen extends ConsumerWidget {
                             .pushNamed(RouteGenerator.game2Atten);
                       },
                       child: const CustomStack(
-                        image: 'images/game_attention2.png',
+                        image: 'assets/LogoGame/game_attention2.png',
                         icon: 'images/game_attention2.png',
                         text1: 'Bắt cặp',
                         text2: '10 Cấp độ',
@@ -153,7 +153,7 @@ class AttentionScreen extends ConsumerWidget {
                             .pushNamed(RouteGenerator.levelattengame3);
                       },
                       child: const CustomStack(
-                        image: 'images/game_attention3.png',
+                        image: 'assets/LogoGame/game_attention3.png',
                         icon: 'assets/images/weapon/Missile.png',
                         text1: 'Bắt cá',
                         text2: '10 Cấp độ',

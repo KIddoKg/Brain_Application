@@ -120,7 +120,7 @@ class Homepage extends ConsumerWidget {
                               .pushNamed(RouteGenerator.languageScreen);
                         },
                         child: const CustomStack(
-                          image: 'images/language-background.jpg',
+                          image: 'assets/LogoGame/language-background.jpg',
                           icon: 'images/language-icon.jpg',
                           text1: 'Trò Chơi Ngôn Ngữ',
                           text2: '4 Trò Chơi',
@@ -137,7 +137,7 @@ class Homepage extends ConsumerWidget {
                             .pushNamed(RouteGenerator.attentionScreen);
                       },
                       child: const CustomStack(
-                        image: 'images/attention-background.png',
+                        image: 'assets/LogoGame/attention-background.png',
                         icon: 'images/attention-icon.png',
                         text1: 'Trò Chơi Tập Trung',
                         text2: '4 Trò Chơi',
@@ -153,7 +153,7 @@ class Homepage extends ConsumerWidget {
                             .pushNamed(RouteGenerator.memoryScreen);
                       },
                       child: const CustomStack(
-                        image: 'images/memory-background.png',
+                        image: 'assets/LogoGame/memory-background.png',
                         icon: 'images/memory.png',
                         text1: 'Trò Chơi Ghi Nhớ',
                         text2: '4 Trò Chơi',
@@ -169,7 +169,7 @@ class Homepage extends ConsumerWidget {
                             .pushNamed(RouteGenerator.mathScreen);
                       },
                       child: const CustomStack(
-                        image: 'images/math-background.png',
+                        image: 'assets/LogoGame/math-background.png',
                         icon: 'images/math-icon.jpg',
                         text1: 'Trò Chơi Tính Toán',
                         text2: '2 Trò Chơi',
