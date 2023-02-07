@@ -89,10 +89,11 @@ class _LanguageGameThreeState extends State<LanguageGameThree> {
     currentIndex = Random().nextInt(data["letter"].length);
     if (data.isNotEmpty) {
       String firstCharacter = data["letter"][currentIndex].split(' ')[0];
+      print(firstCharacter);
       _answer.add(firstCharacter);
+
       return firstCharacter;
     }
-
     throw Exception('Failed to load random character in the dictionary');
   }
 
