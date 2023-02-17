@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/services.dart';
 import 'package:brain_application/data/data_onborad/data_languages_3.dart';
 import 'package:brain_application/theme_color/light_colors.dart';
@@ -12,6 +13,7 @@ import 'dart:math';
 import 'package:brain_application/general/check_languages.dart';
 import 'package:brain_application/widgets/components/toast.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class LanguageGameThree extends StatefulWidget {
@@ -26,6 +28,7 @@ class _LanguageGameThreeState extends State<LanguageGameThree> {
   final int pointPerCorrectAnswer = 200;
   int currentIndex = 0;
   String listLetter = "lib/data/data_language/word.json";
+  String total_dictionary = "lib/data/data_language/total_dictionary.json";
   Duration answerDuration = const Duration();
   Timer? countdownTimer;
   int numberWord = 0;
@@ -35,6 +38,8 @@ class _LanguageGameThreeState extends State<LanguageGameThree> {
   TextEditingController controller = TextEditingController();
   late Future<String> firstCharacter;
   List<String> _answer = [' ', ' ', ' '];
+  List<String> _usedWord = [];
+  List<String> _checkMathWord = [];
   String firstLetter = "";
   int _point = 0;
 
@@ -63,6 +68,17 @@ class _LanguageGameThreeState extends State<LanguageGameThree> {
     });
   }
 
+  setStartLetter() async {
+    // Obtain shared preferences.
+    final wordUsedLanguage3 = await SharedPreferences.getInstance();
+    List<String>? _wordUsedLanguage3 = wordUsedLanguage3.getStringList("wordUsedLanguage3");
+
+    setState(() {
+      _usedWord =_wordUsedLanguage3!.toList();
+
+    });
+  }
+
   void setEndTimer() {
     countdownTimer!.cancel();
     _showNotify("Hết giờ", "$_point", () {
@@ -76,21 +92,48 @@ class _LanguageGameThreeState extends State<LanguageGameThree> {
           ' ',
           ' ',
         ];
+        _checkMathWord = [];
         fetchRandomCharacter();
         controller.clear();
+        numberWord = 0;
         startTimer();
       });
     });
+  }
+
+  Future<bool> randomLetter(String value) async {
+    final String response = await rootBundle.loadString(listLetter);
+    final data = await json.decode(response);
+    for (int i = 0; i < _usedWord.length; i++) {
+      if (value == _usedWord[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<String> fetchRandomCharacter() async {
     final String response = await rootBundle.loadString(listLetter);
     final data = await json.decode(response);
     currentIndex = Random().nextInt(data["letter"].length);
+    final wordUsedLanguage3 = await SharedPreferences.getInstance();
     if (data.isNotEmpty) {
       String firstCharacter = data["letter"][currentIndex].split(' ')[0];
       print(firstCharacter);
-      _answer.add(firstCharacter);
+      bool checkramdomLetter = await randomLetter(firstCharacter);
+      if(checkramdomLetter){
+        _answer.add(firstCharacter);
+        _usedWord.add(firstCharacter);
+        wordUsedLanguage3.setStringList('wordUsedLanguage3', _usedWord);
+        print(_usedWord);
+      }
+      else if(!checkramdomLetter && (_usedWord.length < data["letter"].length)){
+        fetchRandomCharacter();
+      }
+       else if(!checkramdomLetter && (_usedWord.length >= data["letter"].length)){
+        _usedWord=[];
+        fetchRandomCharacter();
+      }
 
       return firstCharacter;
     }
@@ -98,13 +141,33 @@ class _LanguageGameThreeState extends State<LanguageGameThree> {
   }
 
   Future<bool> checkValidWord(String word) async {
-    Map<String, String> headers = {'Content-type': 'application/json'};
-    final response = await http.post(Uri.parse('$validlanguagesUrl'),
-        headers: headers, body: jsonEncode({'text': word}));
-    if (response.statusCode == 200) {
-      return true;
+    final String response = await rootBundle.loadString(total_dictionary);
+    final data = await json.decode(response);
+    print(data["word"].length);
+
+    for (var i = 0; i < data["word"].length; i++) {
+      String firstCharacter2 = data["word"][i];
+      // print(value);
+      if (word == firstCharacter2) {
+        // print(word);
+        // print(firstCharacter2);
+        return true;
+      }
     }
+
     return false;
+  }
+
+  Future<bool> checkMatchWord(String value) async {
+    String userAnswer = controller.text;
+    String firstChar = _answer[_answer.length - 1];
+    String checkingWord = '$firstChar $userAnswer';
+    for (int i = 0; i < _checkMathWord.length; i++) {
+      if (checkingWord == _checkMathWord[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   // Logic Handler
@@ -113,16 +176,16 @@ class _LanguageGameThreeState extends State<LanguageGameThree> {
     String firstChar = _answer[_answer.length - 1];
     numberWord = _answer.length - 3;
     String checkingWord = '$firstChar $userAnswer';
-
     bool isValidWord = await checkValidWord(checkingWord);
+    bool isMarchWord = await checkMatchWord(checkingWord);
+
     if (isValidWord) {
-      if ("$userAnswer" == _answer[_answer.length - 2] &&
-          "$userAnswer" == _answer[_answer.length - 4]) {
+      if (!isMarchWord) {
         showToastErrorMatch();
       }
-      if ("$userAnswer" != _answer[_answer.length - 2] ||
-          "$userAnswer" != _answer[_answer.length - 4]) {
+      if (isMarchWord) {
         _answer.add(userAnswer);
+        _checkMathWord.add(checkingWord);
         setState(() {
           _point += pointPerCorrectAnswer;
           // Restart timer
@@ -140,6 +203,7 @@ class _LanguageGameThreeState extends State<LanguageGameThree> {
   @override
   void initState() {
     super.initState();
+    setStartLetter();
     firstCharacter = fetchRandomCharacter();
     startTimer();
   }
@@ -219,9 +283,11 @@ class _LanguageGameThreeState extends State<LanguageGameThree> {
             ),
             TextButton(
               child: Text('Có'),
-              onPressed: () {
+              onPressed: () async {
                 back = true;
                 Navigator.pop(context, back);
+                final wordUsedLanguage3 = await SharedPreferences.getInstance();
+                await wordUsedLanguage3.setStringList('wordUsedLanguage3', _usedWord);
               },
             ),
           ],
@@ -308,7 +374,7 @@ class _LanguageGameThreeState extends State<LanguageGameThree> {
                                           ),
                                           IconButton(
                                             onPressed: () {
-                                              stopTime = true;
+                                              // stopTime = true;
                                               setEndTimer();
                                             },
                                             icon: const Icon(
@@ -771,6 +837,16 @@ class _LanguageGameThreeState extends State<LanguageGameThree> {
                             ),
                           ),
                         ],
+                      ),
+                      AutoSizeText(
+                        "Danh sách từ đúng:$_checkMathWord",
+                        textAlign: TextAlign.center,
+
+                        minFontSize: 16,
+                        style: TextStyle(
+                            fontSize: 25,
+                            color: Colors.black,
+                            decoration: TextDecoration.none),
                       ),
                     ],
                   ),

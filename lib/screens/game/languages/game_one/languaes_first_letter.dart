@@ -35,13 +35,13 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
   final int answerDurationInSeconds = 300;
   List<String> _firstLetter = [""];
   List<String> _userLetter = [];
-  List<String> _usedLetter = ["0"];
-  List<String> _countLetterList = [""] ;
-  bool checkLetter = false;
+  List<String> _usedLetter = [];
+
+  // bool checkLetter = false;
   String firstLetter = "";
   String wordInput = "";
   int statusCode = 0;
-  bool checktrue = true;
+  // bool checktrue = true;
   bool stopTime = false;
   bool back = false;
   int reduceSecondsBy = 1;
@@ -72,14 +72,11 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
 
   setStartLetter() async {
     // Obtain shared preferences.
-    final usedLetter = await SharedPreferences.getInstance();
-    final countLetterList = await SharedPreferences.getInstance();
-    List<String>? _countLetterListused = countLetterList.getStringList("countLetterList");
-    List<String>? _usedLetterused = usedLetter.getStringList("usedLetter");
+    final letterUsedLanguage1 = await SharedPreferences.getInstance();
+    List<String>? _letterUsedLanguage1 = letterUsedLanguage1.getStringList("letterUsedLanguage1");
 
     setState(() {
-       _usedLetter =_usedLetterused!.toList();
-       _countLetterList =_countLetterListused!.toList();
+       _usedLetter =_letterUsedLanguage1!.toList();
     });
   }
 
@@ -95,6 +92,7 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
         _userLetter = [];
         firstLetter = "";
         wordInput = "";
+        numberWord = 0;
         fetchRandomCharacter();
         controllerInput.clear();
         startTimer();
@@ -141,10 +139,8 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
   }
 
   Future<bool> checkMatchWord(String value) async {
-    String userAnswer = controllerInput.text;
-    String checkingWord = "$firstLetter$userAnswer";
-    for (int i = 0; i < _firstLetter.length; i++) {
-      if ("$checkingWord" == _firstLetter[i]) {
+    for (int i = 0; i < _userLetter.length; i++) {
+      if (value == _userLetter[i]) {
         return false;
       }
     }
@@ -165,43 +161,36 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
   Future<void> fetchRandomCharacter() async {
     final String response = await rootBundle.loadString(listLetter);
     final data = await json.decode(response);
-    final usedLetter = await SharedPreferences.getInstance();
-    final countLetterList = await SharedPreferences.getInstance();
+    final letterUsedLanguage1 = await SharedPreferences.getInstance();
     int currentIndex = Random().nextInt(data["letter"].length);
-    String tempAge = currentIndex.toString();
-    bool checkramdomLetter = await randomLetter(tempAge);
-
-    if(!checkramdomLetter && _usedLetter.length  >= 16){
-      _usedLetter = ["0"];
-      _countLetterList = [""];
-    }
-    if(!checkramdomLetter && _usedLetter.length < 16  ){
-
-      fetchRandomCharacter();
-    }
-
-     if(checkramdomLetter){
-      firstCharacter = data["letter"][currentIndex].split(' ')[0];
-      // print("day laf char $firstCharacter");
-      String tempAge1 = currentIndex.toString();
-      _usedLetter.add(tempAge1);
-      _countLetterList.add(firstCharacter);
-      usedLetter.setStringList('usedLetter', _usedLetter);
-      countLetterList.setStringList('countLetterList', _countLetterList);
-    }
-
+    String firstCharacter = data["letter"][currentIndex].split(' ')[0];
+    print(firstCharacter);
+    bool checkramdomLetter = await randomLetter(firstCharacter);
 
     setState(() {
-      _firstLetter.add(firstCharacter);
-        firstLetter = _countLetterList[_countLetterList.length-1] ;
+      if(checkramdomLetter){
+        _firstLetter.add(firstCharacter);
+        firstLetter = _firstLetter[1] ;
         letterList = data["letter"];
+        _usedLetter.add(firstCharacter);
+        letterUsedLanguage1.setStringList('letterUsedLanguage1', _usedLetter);
+        print(_usedLetter);
+      }
+      else if(!checkramdomLetter && (_usedLetter.length < data["letter"].length)){
+        fetchRandomCharacter();
+      }
+      else if(!checkramdomLetter && (_usedLetter.length >= data["letter"].length)){
+        _usedLetter=[];
+        fetchRandomCharacter();
+      }
+
       print(_usedLetter);
     });
   }
 
   void handleClickCheck() async {
     String userAnswer = controllerInput.text;
-    String firstLetter =  _countLetterList[_countLetterList.length-1];
+    String firstLetter =  _firstLetter[1];
     String checkingWord = "$firstLetter$userAnswer";
     numberWord = _firstLetter.length - 1;
     bool isValidWord = await checkValidWord(checkingWord);
@@ -336,7 +325,7 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
           Padding(
             padding: const EdgeInsets.only(top: 80),
             child: AutoSizeText(title,
-                maxLines: 2,
+                maxLines: 1,
                 minFontSize: 16,
                 style: const TextStyle(
                     fontSize: 40,
@@ -345,7 +334,7 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
                 textAlign: TextAlign.center),
           ),
           Container(
-            width:  size.height * 0.1,
+            width:  size.width * 0.1,
 
             margin: const EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
@@ -358,17 +347,17 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
             ),
             child: Stack(
               children: [
-                const Positioned(
-                  bottom: -3,
-                  left: -5,
-                  right: -250,
-                  child: Image(
-                    image: AssetImage('assets/images/cat-clap.gif'),
-                    height: 100,
-                    width: 200,
-                    //   width:400,
-                  ),
-                ),
+                // const Positioned(
+                //   bottom: -3,
+                //   left: -5,
+                //   right: -250,
+                //   child: Image(
+                //     image: AssetImage('assets/images/cat-clap.gif'),
+                //     height: 100,
+                //     width: 200,
+                //     //   width:400,
+                //   ),
+                // ),
                 Positioned(
                   bottom: -30,
                   left: -5,
@@ -477,10 +466,8 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
               onPressed: () async {
                 back = true;
                 Navigator.pop(context, back);
-                final usedLetter = await SharedPreferences.getInstance();
-                final countLetterList = await SharedPreferences.getInstance();
-                await usedLetter.setStringList('usedLetter', _usedLetter);
-                await countLetterList.setStringList('countLetterList', _countLetterList);
+                final letterUsedLanguage1 = await SharedPreferences.getInstance();
+                await letterUsedLanguage1.setStringList('letterUsedLanguage1', _usedLetter);
               },
             ),
           ],
@@ -805,7 +792,7 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 40, vertical: 14),
                                   textStyle: const TextStyle(fontSize: 24)),
-                              child: const AutoSizeText('Gửi',
+                              child: AutoSizeText('Gửi',
                                   maxLines: 1,
                                   minFontSize: 16,
                                   style: TextStyle(

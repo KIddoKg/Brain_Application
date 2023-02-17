@@ -271,6 +271,7 @@ class _WordFindWidgetState extends State<WordFindWidget> {
       ColorsHint = LightColors.kLightYellow;
     }
     ;
+
     // ignore: unnecessary_type_check
     assert(test is int);
     return WillPopScope(
@@ -658,10 +659,19 @@ class _WordFindWidgetState extends State<WordFindWidget> {
 
                             return LayoutBuilder(
                               builder: (context, constraints) {
-                                Color color = statusBtn
-                                    ? Color(0xFFFFD600)
+                                Color? color = statusBtn
+                                    // ? Color(0xFFFFD600)
+                                    // : Color(0xFFFFFD9D);
+                                    ? Color(0xFFFFF9EC)
                                     : Color(0xFFFFFD9D);
+                                print(statusBtn);
+                                var ColorsRemove;
+                                if(statusBtn == true){
+                                  ColorsRemove = Colors.white;
 
+                                }else{
+                                  ColorsRemove = Colors.black;
+                                }
                                 return Container(
                                   decoration: BoxDecoration(
                                     color: color,
@@ -674,8 +684,8 @@ class _WordFindWidgetState extends State<WordFindWidget> {
                                     child: Text(
                                       "${currentQues.arrayBtns[index]}"
                                           .toUpperCase(),
-                                      style: const TextStyle(
-                                        color: Colors.black,
+                                      style: TextStyle(
+                                        color: ColorsRemove,
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -706,7 +716,7 @@ class _WordFindWidgetState extends State<WordFindWidget> {
     bool next: false,
     bool left: false,
   }) async {
-    nextcount = 0;
+    nextcount = Random().nextInt(listQuestions.length);
     count2 = 3;
 
     // lets finish up generate puzzle
@@ -792,14 +802,17 @@ class _WordFindWidgetState extends State<WordFindWidget> {
 
     if (puzzleNoHints.length > 0 && count2 > 0) {
       hintCount++;
-      int indexHint = Random().nextInt(puzzleNoHints.length);
+      // int indexHint = Random().nextInt(puzzleNoHints.length);
+      // int indexHint2 = Random().nextInt(puzzleNoHints.length);
+      int indexHint = 0;
+      int indexHint2 = 3;
       int countTemp = 0;
       // print("hint $indexHint");
 
       currentQues.puzzles = currentQues.puzzles.map((puzzle) {
         if (!puzzle.hintShow && puzzle.currentIndex == null) countTemp++;
 
-        if (indexHint == countTemp - 1) {
+        if (indexHint == countTemp - 1 || indexHint2 == countTemp - 1  ) {
           puzzle.hintShow = true;
           puzzle.currentValue = puzzle.correctValue;
           count2--;
