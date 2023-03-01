@@ -4,260 +4,107 @@ import 'package:brain_application/data/data_memory/data_memory_one.dart';
 import 'package:brain_application/screens/game/memory/test_screen.dart';
 import 'package:brain_application/widgets/components/score_board.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:lottie/lottie.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class MemoryOneScreen extends StatefulWidget {
-  const MemoryOneScreen({super.key});
+class GameOne extends StatefulWidget {
+  const GameOne({super.key});
 
   @override
-  State<MemoryOneScreen> createState() => _MemoryOneScreenState();
+  State<GameOne> createState() => _GameOneState();
 }
 
-class _MemoryOneScreenState extends State<MemoryOneScreen> {
-  bool init = false; // Biến dùng để hiện thời gian 3s
-  int numOfRow = 0; // Số card trên môt hàng
+class _GameOneState extends State<GameOne> {
+  int numOfRow = 0; // Số card trên 1 hàng
   int highlight = 0;
+  bool _showOverlay = false;
+  bool _showSuccess = false;
+  bool _showFail = false;
+  bool _disableTap = false;
+  bool _isLoading = false;
+  Timer? _timer1; // Thời gian 4s để hiện đếm ngược
+  Timer? _timer2; // Thời gian 3s để highlight
+  Timer? _timerSucess;
+  Timer? _timerLevel;
+  // bool _isDispose = false;
 
-  // Time 1: Thời gian 3s để chuẩn bị
-  int percent = 3;
-  Timer? timer;
-  displayTimer() {
-    timer = Timer.periodic(Duration(milliseconds: 1000), (_) {
-      setState(() {
-        percent -= 1;
-        if (percent <= 0) {
-          init = true;
-          timer!.cancel();
-          displayTimer2();
-        }
-      });
-    });
-  }
-
-  cardOfLevel(numOfY, numOfW) {
-    pairsYellow = getYellow();
+  // Setup number of highlight of each level
+  cardOfLevel(numOfB, numOfW) {
+    pairsBlue = getBlue();
     pairsWhite = getWhite();
-    total = numOfY + numOfW;
-    pairs = pickRandomItemsAsListWithSubList(pairsYellow, numOfY) +
+    total = numOfB + numOfW;
+    pairs = pickRandomItemsAsListWithSubList(pairsBlue, numOfB) +
         pickRandomItemsAsListWithSubList(pairsWhite, numOfW);
     visiblePairs = pickRandomItemsAsListWithSubList(pairsWhite, total);
     selected = true;
-    Future.delayed(Duration(seconds: 3), () {
-      pairs.shuffle();
-      visiblePairs = pairs;
-      selected = true;
+    _showOverlay = true;
 
-      // Sau 3 giây thì tắt Highlight ()
-
-      Future.delayed(const Duration(seconds: 3), () {
-        setState(() {
-          selected = false;
-          visiblePairs = pickRandomItemsAsListWithSubList(pairsWhite, total);
-          timerDuration = Duration(seconds: 10);
-          startTimer();
-        });
-      });
-    });
-  }
-
-  // Time 2: Thời gian 3s để highlight
-  int percent2 = 3;
-  Timer? timer2;
-  displayTimer2() {
-    timer2 = Timer.periodic(Duration(milliseconds: 1000), (_) {
+    _timer1 = Timer(Duration(seconds: 4), () {
       setState(() {
-        percent2 -= 1;
-        if (percent2 <= 0) {
-          init = true;
-          timer2!.cancel();
-          percent = 0;
-        }
+        pairs.shuffle();
+        visiblePairs = pairs;
+        selected = true;
+        _showOverlay = false;
+      });
+    });
+    _timer2 = Timer(Duration(seconds: 6), () {
+      setState(() {
+        selected = false;
+        visiblePairs = pickRandomItemsAsListWithSubList(pairsWhite, total);
+        startTimer();
       });
     });
   }
 
-  // Time 3: Thời gian 10s để chơi game
-  Duration timerDuration = const Duration(seconds: 10);
-  void setCountdown() {
-    const reduceSecondsBy = 1;
+// Hiển thị những ô đúng còn lại (chưa chọn) khi end game
+  showResult() {
+    result = getResult();
+    for (int i = 0; i < indexResult.length; i++) {
+      pairs[indexResult[i]] = result[0];
+    }
     setState(() {
-      final seconds = timerDuration.inSeconds - reduceSecondsBy;
-      if (seconds <= 0) {
-        countdownTimer!.cancel();
-        numOfChoose = 0;
-        init = false;
-        timerDuration = const Duration(seconds: 10);
-        restart();
-      } else {
-        timerDuration = Duration(seconds: seconds);
-      }
+      visiblePairs = pairs;
     });
   }
 
-  Timer? countdownTimer;
-  void startTimer() {
-    countdownTimer =
-        Timer.periodic(const Duration(seconds: 1), (_) => setCountdown());
+// Animation of Success
+  showSuccess() async {
+    _showSuccess = true;
+    setState(() {
+      _disableTap = true;
+    });
+    // await Future.delayed(Duration(seconds: 3), () {
+    //   setState(() {
+    //     _showSuccess = false;
+    //   });
+    // });
+    // Hiện icon success trong vòng 3s
+    _timerSucess = Timer(Duration(seconds: 3), () {
+      setState(() {
+        _showSuccess = false;
+      });
+    });
   }
 
-  //
-  displayLevel() {
-    if (level == 1) {
-      // 2x3
-      cardOfLevel(1, 5);
-      numOfRow = 3;
-      highlight = level;
-    } else if (level == 2) {
-      // 3x3
-      cardOfLevel(2, 7);
-      numOfRow = 3;
-      highlight = level;
-    } else if (level == 3) {
-      // 3x4
-      cardOfLevel(3, 9);
-      numOfRow = 4;
-      highlight = level;
-    } else if (level == 4) {
-      // 4x4
-      cardOfLevel(4, 12);
-      numOfRow = 4;
-      highlight = level;
-    } else if (level == 5) {
-      // 4x5
-      cardOfLevel(5, 15);
-      numOfRow = 5;
-      highlight = level;
-    } else if (level == 6) {
-      // 4x5
-      cardOfLevel(6, 14);
-      numOfRow = 5;
-      highlight = level;
-    } else if (level == 7) {
-      // 5x5
-      cardOfLevel(7, 18);
-      numOfRow = 5;
-      highlight = level;
-    } else if (level == 8) {
-      // 5x6
-      cardOfLevel(8, 22);
-      numOfRow = 6;
-      highlight = level;
-    } else if (level == 9) {
-      // 5x6
-      cardOfLevel(9, 21);
-      numOfRow = 6;
-      highlight = level;
-    } else if (level == 10) {
-      // 6x6
-      cardOfLevel(10, 26);
-      numOfRow = 6;
-      highlight = level;
-    } else if (level == 11) {
-      // 6x7
-      cardOfLevel(11, 31);
-      numOfRow = 7;
-      highlight = level;
-    } else if (level == 12) {
-      // 6x7
-      cardOfLevel(12, 30);
-      numOfRow = 7;
-      highlight = level;
-    } else if (level == 13) {
-      // 7x7
-      cardOfLevel(13, 36);
-      numOfRow = 7;
-      highlight = level;
-    } else if (level == 14) {
-      // 7x7
-      cardOfLevel(14, 35);
-      numOfRow = 7;
-      highlight = level;
-    } else if (level == 15) {
-      // 7x8
-      cardOfLevel(15, 41);
-      numOfRow = 8;
-      highlight = level;
-    } else if (level == 16) {
-      // 7x8
-      cardOfLevel(16, 40);
-      numOfRow = 8;
-      highlight = level;
-    } else if (level == 17) {
-      // 8x8
-      cardOfLevel(17, 47);
-      numOfRow = 8;
-      highlight = level;
-    } else if (level == 18) {
-      // 8x8
-      cardOfLevel(18, 46);
-      numOfRow = 8;
-      highlight = level;
-    } else if (level == 19) {
-      // 8x8
-      cardOfLevel(19, 45);
-      numOfRow = 8;
-      highlight = level;
-    } else if (level == 20) {
-      // 8x9
-      cardOfLevel(20, 52);
-      numOfRow = 9;
-      highlight = level;
-    } else if (level == 21) {
-      // 8x9
-      cardOfLevel(21, 51);
-      numOfRow = 9;
-      highlight = level;
-    } else if (level == 22) {
-      // 9x9
-      cardOfLevel(22, 59);
-      numOfRow = 9;
-      highlight = level;
-    } else if (level == 23) {
-      // 9x9
-      cardOfLevel(23, 58);
-      numOfRow = 9;
-      highlight = level;
-    } else if (level == 24) {
-      // 9x9
-      cardOfLevel(24, 57);
-      numOfRow = 9;
-      highlight = level;
-    } else if (level == 25) {
-      // 9x10
-      cardOfLevel(25, 65);
-      numOfRow = 10;
-      highlight = level;
-    } else if (level == 26) {
-      // 9x10
-      cardOfLevel(26, 64);
-      numOfRow = 10;
-      highlight = level;
-    } else if (level == 27) {
-      // 9x10
-      cardOfLevel(27, 63);
-      numOfRow = 10;
-      highlight = level;
-    } else if (level == 28) {
-      // 10x10
-      cardOfLevel(28, 72);
-      numOfRow = 10;
-      highlight = level;
-    } else if (level == 29) {
-      // 10x10
-      cardOfLevel(29, 71);
-      numOfRow = 10;
-      highlight = level;
-    } else if (level == 30) {
-      // 10x10
-      cardOfLevel(30, 70);
-      numOfRow = 10;
-      highlight = level;
-    }
+  // Animation of Wrong
+  showFail() {
+    _showFail = true;
+    _disableTap = true;
+    // Future.delayed(Duration(seconds: 3), () {
+    //   setState(() {
+    //     _showFail = false;
+    //   });
+    // });
+    _timerSucess = Timer(Duration(seconds: 3), () {
+      setState(() {
+        _showFail = false;
+      });
+    });
   }
 
-  // Khởi tạo level ban đầu
-  initGame() {
+  initLevel() {
     if (maxLevel <= 1) {
       level = 1;
     } else {
@@ -265,36 +112,394 @@ class _MemoryOneScreenState extends State<MemoryOneScreen> {
     }
   }
 
-// Save maxLevel
-  Future<void> setMaxLevel() async {
-    final SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setInt("dataMaxLevel", maxLevel);
-  }
-
-  //
-  Future<void> getMaxLevel() async {
-    final SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.getInt("dataMaxLevel");
-  }
-
-  // xác định level trong hàm Reset()
-  calLevel() {
-    if (numOfWrong == 0) {
-      // Level up
-      level += 1;
-    } else {
-      // Level down
-      level -= numOfWrong ~/ 2;
+  displayLevel() {
+    // initLevel();
+    if (level == 1) {
+      // 2x3
+      cardOfLevel(1, 5);
+      numOfRow = 3;
+      highlight = level;
+      error = 1;
+      timeLeft = 10;
+    } else if (level == 2) {
+      // 3x3
+      cardOfLevel(2, 7);
+      numOfRow = 3;
+      highlight = level;
+      error = 1;
+      timeLeft = 10;
+    } else if (level == 3) {
+      // 3x4
+      cardOfLevel(3, 9);
+      numOfRow = 4;
+      highlight = level;
+      error = 1;
+      timeLeft = 10;
+    } else if (level == 4) {
+      // 4x4
+      cardOfLevel(4, 12);
+      numOfRow = 4;
+      highlight = level;
+      error = 1;
+      timeLeft = 10;
+    } else if (level == 5) {
+      // 4x5
+      cardOfLevel(5, 15);
+      numOfRow = 4;
+      highlight = level;
+      error = 2;
+      timeLeft = 10;
+    } else if (level == 6) {
+      // 4x5
+      cardOfLevel(6, 14);
+      numOfRow = 4;
+      highlight = level;
+      error = 2;
+      timeLeft = 15;
+    } else if (level == 7) {
+      // 5x5
+      cardOfLevel(7, 18);
+      numOfRow = 5;
+      highlight = level;
+      error = 3;
+      timeLeft = 20;
+    } else if (level == 8) {
+      // 5x6
+      cardOfLevel(8, 22);
+      numOfRow = 5;
+      highlight = level;
+      error = 3;
+      timeLeft = 20;
+    } else if (level == 9) {
+      // 5x6
+      cardOfLevel(9, 21);
+      numOfRow = 5;
+      highlight = level;
+      error = 4;
+      timeLeft = 20;
+    } else if (level == 10) {
+      // 6x6
+      cardOfLevel(10, 26);
+      numOfRow = 6;
+      error = 4;
+      highlight = level;
+      timeLeft = 25;
+    } else if (level == 11) {
+      // 6x7
+      cardOfLevel(11, 31);
+      numOfRow = 6;
+      error = 4;
+      highlight = level;
+      timeLeft = 25;
+    } else if (level == 12) {
+      // 6x7
+      cardOfLevel(12, 30);
+      numOfRow = 6;
+      error = 4;
+      highlight = level;
+      timeLeft = 30;
+    } else if (level == 13) {
+      // 7x7
+      cardOfLevel(13, 36);
+      numOfRow = 7;
+      error = 4;
+      highlight = level;
+      timeLeft = 30;
+    } else if (level == 14) {
+      // 7x7
+      cardOfLevel(14, 35);
+      numOfRow = 7;
+      error = 4;
+      highlight = level;
+      timeLeft = 30;
+    } else if (level == 15) {
+      // 7x8
+      cardOfLevel(15, 41);
+      numOfRow = 7;
+      error = 4;
+      highlight = level;
+      timeLeft = 35;
+    } else if (level == 16) {
+      // 7x8
+      cardOfLevel(16, 40);
+      numOfRow = 7;
+      highlight = level;
+      error = 4;
+      timeLeft = 35;
+    } else if (level == 17) {
+      // 8x8
+      cardOfLevel(17, 47);
+      numOfRow = 8;
+      highlight = level;
+      error = 4;
+      timeLeft = 40;
+    } else if (level == 18) {
+      // 8x8
+      cardOfLevel(18, 46);
+      numOfRow = 8;
+      error = 4;
+      highlight = level;
+      timeLeft = 40;
+    } else if (level == 19) {
+      // 8x8
+      cardOfLevel(19, 45);
+      numOfRow = 8;
+      highlight = level;
+      error = 4;
+      timeLeft = 40;
+    } else if (level == 20) {
+      // 8x9
+      cardOfLevel(20, 52);
+      numOfRow = 8;
+      highlight = level;
+      error = 5;
+      timeLeft = 45;
+    } else if (level == 21) {
+      // 8x9
+      cardOfLevel(21, 51);
+      numOfRow = 8;
+      highlight = level;
+      error = 5;
+      timeLeft = 45;
+    } else if (level == 22) {
+      // 9x9
+      cardOfLevel(22, 59);
+      numOfRow = 9;
+      highlight = level;
+      error = 5;
+      timeLeft = 50;
+    } else if (level == 23) {
+      // 9x9
+      cardOfLevel(23, 58);
+      numOfRow = 9;
+      highlight = level;
+      error = 5;
+      timeLeft = 50;
+    } else if (level == 24) {
+      // 9x9
+      cardOfLevel(24, 57);
+      numOfRow = 9;
+      highlight = level;
+      error = 5;
+      timeLeft = 50;
+    } else if (level == 25) {
+      // 9x10
+      cardOfLevel(25, 65);
+      numOfRow = 9;
+      highlight = level;
+      error = 5;
+      timeLeft = 55;
+    } else if (level == 26) {
+      // 9x10
+      cardOfLevel(26, 64);
+      numOfRow = 9;
+      highlight = level;
+      error = 5;
+      timeLeft = 55;
+    } else if (level == 27) {
+      // 9x10
+      cardOfLevel(27, 63);
+      numOfRow = 9;
+      highlight = level;
+      error = 5;
+      timeLeft = 60;
+    } else if (level == 28) {
+      // 10x10
+      cardOfLevel(28, 72);
+      numOfRow = 10;
+      highlight = level;
+      error = 5;
+      timeLeft = 60;
+    } else if (level == 29) {
+      // 10x10
+      cardOfLevel(29, 71);
+      numOfRow = 10;
+      highlight = level;
+      error = 5;
+      timeLeft = 60;
+    } else if (level == 30) {
+      // 10x10
+      cardOfLevel(30, 70);
+      numOfRow = 10;
+      error = 5;
+      highlight = level;
+      timeLeft = 60;
     }
-    restart();
   }
 
-  void restart() {
-    numOfChoose = 0;
-    level;
+// Time 1: Thời gian 3s để chuẩn bị
+  int percent = 3;
+  Timer? timer;
+  displayTimer() {
+    timer = Timer.periodic(Duration(milliseconds: 1000), (_) {
+      setState(() {
+        percent -= 1;
+        if (percent <= 0) {
+          print("3s countdown end");
+          timer?.cancel();
+        }
+      });
+    });
+  }
+
+  // Time 2: Thời gian để chơi mỗi level
+  Timer? _timerGoResult;
+  Timer? _timer;
+  void startTimer() {
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(
+      oneSec,
+      (timer) => setState(() {
+        if (timeLeft <= 0) {
+          timer.cancel();
+
+          if ((numOfWrong == 0 || numOfWrong > 0) && tries < 5) {
+            _disableTap = true;
+            print("Time out");
+            screenLevelDown();
+
+            indexResult = [];
+
+            // Future.delayed(Duration(seconds: 4), () {
+            //   setState(() {
+            //     levelDown();
+            //   });
+            // });
+            _timerLevel = Timer(Duration(seconds: 4), () {
+              setState(() {
+                levelDown();
+              });
+            });
+          } else if (tries >= 5) {
+            _disableTap = true;
+            screenLevelDown();
+            print("Final time out");
+            if (maxLevel < level) {
+              maxLevel = level;
+            }
+            // Future.delayed(Duration(seconds: 4), () {
+            //   setState(() {
+            //     navigationPage();
+            //   });
+            // });
+            _timerGoResult = Timer(Duration(seconds: 4), () {
+              setState(() {
+                // navigationPage();
+              });
+            });
+          }
+        } else {
+          timeLeft = timeLeft - 1;
+        }
+      }),
+    );
+  }
+
+  // Hàm dừng thời gian
+  void stopTimer() {
+    _timer?.cancel();
+  }
+
+  // Level up
+  void levelUp() {
+    level++;
+    tries++;
+
+    // start();
+    // isStart();
+    isLoading();
+  }
+
+  // Level down
+  void levelDown() {
+    level -= numOfWrong ~/ 2;
+    tries++;
+    // start();
+    // isStart();
+    isLoading();
+  }
+
+  // Hàm show result and then showFail after 1s
+  Timer? _timer3;
+  screenLevelDown() async {
+    await showResult();
+    // Future.delayed(Duration(seconds: 1), () async {
+    //   setState(() {
+    //     showFail();
+    //   });
+    // });
+    _timer3 = Timer(Duration(seconds: 1), () {
+      setState(() {
+        showFail();
+      });
+    });
+  }
+
+  void disableTap() {
+    selected = true;
+    Future.delayed(Duration(microseconds: 100), () {
+      selected = false;
+    });
+  }
+
+  // màn hình hiển thị level
+  screenLoadingLevel() {
+    Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          "Cấp Độ $level",
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            color: Colors.black,
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+        const SpinKitSquareCircle(
+          color: Color(0xff0081c9),
+          size: 100,
+          duration: Duration(seconds: 1),
+        ),
+      ],
+    );
+  }
+
+  // Hàm chức năng hiện thị level
+  late Timer _timerLoading;
+  isLoading() async {
+    _isLoading = true;
+    _timerLoading = Timer(Duration(seconds: 2), () {
+      setState(() {
+        displayLevel();
+        _isLoading = false;
+        start();
+      });
+    });
+  }
+
+  // Navigation to Result page
+  // navigationPage() {
+  //   setState(() {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => ResultPage()),
+  //     );
+  //   });
+  // }
+
+  start() {
+    _disableTap = false;
+    numOfCorrect = 0;
+    numOfWrong = 0;
+    store = [];
     percent = 3;
+    level;
     displayTimer();
-    displayLevel();
   }
 
   @override
@@ -302,411 +507,280 @@ class _MemoryOneScreenState extends State<MemoryOneScreen> {
     // TODO: implement initState
     super.initState();
     tries = 1;
-    initGame();
-    maxLevel = level;
     score = 0;
-    numOfChoose = 0;
-    restart();
+    // start();
+    // isStart();
+    initLevel();
+    maxLevel = level;
+    isLoading();
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    countdownTimer!.cancel();
-    timer!.cancel();
-    timer2!.cancel();
+    _timerLoading.cancel();
+    // _isDispose = true;
+    timer?.cancel();
+    _timer1?.cancel();
+    _timer2?.cancel();
+    _timer?.cancel();
+    _timerSucess?.cancel();
+    _timerLevel?.cancel();
+    _timer3?.cancel();
+    // _timer4.cancel();
+    _timerGoResult?.cancel();
     super.dispose();
-  }
-
-  Future<void> _showNotify(String title, String content, String contents,
-      String img, Function callback) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => Container(
-        padding: const EdgeInsets.all(10),
-        child: Stack(
-          children: [
-            //Alignment at Center
-            Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(21),
-              ),
-              child: Stack(
-                children: [
-                  SizedBox(
-                    width: 350,
-                    height: 270,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(21),
-                        // color: Color(0xffe1d7c6),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFFF9C4), Color(0xFFF9A825)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Title
-                  Positioned(
-                    left: 0,
-                    top: 20,
-                    child: Align(
-                      child: SizedBox(
-                        width: 350,
-                        height: 40,
-                        child: Container(
-                          child: Center(
-                            child: Text(
-                              title,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 28,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.none,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 0,
-                    top: 60,
-                    child: SizedBox(
-                      height: 115,
-                      width: 350,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Image.asset(
-                            img,
-                            alignment: Alignment.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // content
-                  Positioned(
-                    left: 0,
-                    bottom: 55,
-                    child: Align(
-                      child: SizedBox(
-                        width: 350,
-                        height: 40,
-                        child: Center(
-                          child: AutoSizeText(
-                            content,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w300,
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 0,
-                    bottom: 45,
-                    child: Column(
-                      children: [
-                        Text(
-                          "Điểm số: $score",
-                          style: TextStyle(
-                            color: Colors.black,
-                            decoration: TextDecoration.none,
-                            fontSize: 25,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1,
-                            wordSpacing: 2,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 30,
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                "Cấp độ cao nhất của bạn: $maxLevel",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  decoration: TextDecoration.none,
-                                  color: Colors.black.withOpacity(0.8),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Button
-
-                  Positioned(
-                    left: 115,
-                    bottom: 5,
-                    child: SizedBox(
-                      height: 40,
-                      width: 120,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xff277bc0),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: TextButton(
-                          onPressed: () => callback(),
-                          child: Text(
-                            contents,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void endGame() {
-    countdownTimer!.cancel();
-    // displayCountdownTimer!.cancel();
-    _showNotify("Điểm số: $score", "", "Thoát", "assets/correct.png", () {
-      Navigator.of(context).pop();
-      setState(() {
-        Navigator.pop(context, back);
-      });
-    });
-  }
-
-  bool back = false;
-
-  Future<bool?> showMyDialog(BuildContext context) {
-    return showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Bạn có muốn thoát ra ?'),
-          actions: [
-            TextButton(
-              child: Text('Không'),
-              onPressed: () {
-                back = false;
-                Navigator.pop(context, back);
-              },
-            ),
-            TextButton(
-              child: Text('Có'),
-              onPressed: () {
-                back = true;
-                Navigator.pop(context, back);
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     double screen_width = MediaQuery.of(context).size.width;
     double screen_height = MediaQuery.of(context).size.height;
-    return WillPopScope(
-        onWillPop: () async {
-          final back = await showMyDialog(context);
-          return back ?? false;
-        },
-        child: SafeArea(
-          child: Scaffold(
-            body: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xffd23369), Color(0xffff597b)],
-                  begin: FractionalOffset(0.5, 1),
-                ),
-              ),
-              width: screen_width,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Color(0xffe5f6fe),
+        body: Container(
+          width: screen_width,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Icons
+              Row(
+                // crossAxisAlignment: CrossAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Icons
+                  // Row(
+                  //   children: [
+                  //     IconButton(
+                  //       onPressed: () {
+                  //         print("Back Here");
+                  //         Navigator.pop(
+                  //             context,
+                  //             MaterialPageRoute(
+                  //                 builder: (context) => HomePage()));
+                  //       },
+                  //       icon: const Icon(Icons.arrow_back_ios),
+                  //       iconSize: 30,
+                  //     ),
+                  //   ],
+                  // ),
                   Row(
-                    // crossAxisAlignment: CrossAxisAlignment.spaceBetween,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              print("Back Here");
-                              // Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) => const HomePage()));
-                            },
-                            icon: const Icon(Icons.arrow_back_ios),
-                            iconSize: 30,
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              print("Back Here");
-                              // Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) => const HomePage()));
-                            },
-                            icon: const Icon(Icons.lightbulb_outline),
-                            iconSize: 30,
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              print("Back Here");
-                              // Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) => const HomePage()));
-                            },
-                            icon: const Icon(Icons.settings),
-                            iconSize: 30,
-                          ),
-                        ],
+                      // IconButton(
+                      //   onPressed: () {
+                      //     print("Back Here");
+                      //     // Navigator.push(
+                      //     //     context,
+                      //     //     MaterialPageRoute(
+                      //     //         builder: (context) => const HomePage()));
+                      //   },
+                      //   icon: const Icon(Icons.lightbulb_outline),
+                      //   iconSize: 30,
+                      // ),
+                      IconButton(
+                        onPressed: () {
+                          print("Back Here");
+                          // Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(
+                          //         builder: (context) => const HomePage()));
+                        },
+                        icon: const Icon(Icons.settings),
+                        iconSize: 30,
                       ),
                     ],
                   ),
-                  // Title
-                  Container(
-                    // width: screen_width,
-                    // height: screen_height / 4.5,
-                    // decoration: const BoxDecoration(
-                    //   color: Colors.amber,
-                    // ),
-                    child: Column(
-                      children: [
-                        Center(
-                          child: Text(
-                            "Cấp độ: $level",
-                            style: const TextStyle(
-                              fontSize: 30,
-                              color: Colors.white,
+                ],
+              ),
+
+              // Dashboard
+              Container(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          bottom: 20, left: 20, right: 20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Lượt chơi",
+                            style: TextStyle(
+                              color: Colors.black,
+                              letterSpacing: 1,
+                              fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Center(
-                          child: Text(
-                            "Lượt chơi: $tries/12",
+                          // SizedBox(
+                          //   height: 20,
+                          // ),
+                          Text(
+                            "$tries/12",
                             style: const TextStyle(
-                              fontSize: 20,
-                              color: Color(0xffbbe3f0),
+                              color: Colors.black,
+                              letterSpacing: 1,
+                              fontSize: 28,
                               fontWeight: FontWeight.w700,
                             ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            scoreBoard(
-                                "Thời gian", "${timerDuration.inSeconds}"),
-                            scoreBoard("Điểm", "$score"),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Display Question
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      // decoration: BoxDecoration(color: Colors.blue),
-                      child: init == false
-                          ? Container(
-                              child: CircularPercentIndicator(
-                                circularStrokeCap: CircularStrokeCap.round,
-                                percent: percent / 3,
-                                animation: true,
-                                animateFromLastPercent: true,
-                                radius: 30.0,
-                                lineWidth: 5.0,
-                                progressColor: Colors.amber,
-                                center: Text(
-                                  "$percent",
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 40),
-                                ),
-                              ),
-                            )
-                          : Container(),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 5,
-                    child: Container(
-                      // decoration: BoxDecoration(color: Colors.deepOrange),
-                      child: GridView(
-                        padding: EdgeInsets.only(
-                            top: 10, left: 20, right: 20, bottom: 10),
-                        shrinkWrap: true,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: numOfRow),
-                        children: List.generate(visiblePairs.length, (index) {
-                          return Tile(
-                              imageAssetPath:
-                                  visiblePairs[index].getImageAssetPath(),
-                              parent: this,
-                              tileIndex: index);
-                        }),
+                          )
+                        ],
                       ),
                     ),
-                  )
-                ],
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          bottom: 20, left: 20, right: 20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Điểm số",
+                            style: TextStyle(
+                              color: Colors.black,
+                              letterSpacing: 1,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          // SizedBox(
+                          //   height: 10,
+                          // ),
+                          Text(
+                            // timeLeft.toString(),
+                            "$score",
+                            style: const TextStyle(
+                              color: Colors.black,
+                              letterSpacing: 1,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
-            ),
+
+              // Games
+              _isLoading
+                  ? Expanded(
+                      child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Cấp Độ $level",
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              color: Colors.black,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 30,
+                          ),
+                          SpinKitPouringHourGlassRefined(
+                            color: Color(0xff0081c9),
+                            size: 100,
+                            duration: Duration(seconds: 1),
+                          ),
+                        ],
+                      ),
+                    ))
+                  : Expanded(
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: Container(
+                              child: GridView(
+                                padding: const EdgeInsets.only(
+                                    top: 10, left: 20, right: 20, bottom: 10),
+                                shrinkWrap: true,
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: numOfRow),
+                                children:
+                                    List.generate(visiblePairs.length, (index) {
+                                  return Tile(
+                                    imageAssetPath:
+                                        visiblePairs[index].getImageAssetPath(),
+                                    parent: this,
+                                    tileIndex: index,
+                                  );
+                                }),
+                              ),
+                            ),
+                          ),
+                          Visibility(
+                            visible: _showOverlay,
+                            child: Center(
+                              child: Container(
+                                child: CircularPercentIndicator(
+                                  circularStrokeCap: CircularStrokeCap.round,
+                                  percent: percent / 3,
+                                  animation: true,
+                                  animateFromLastPercent: true,
+                                  radius: 70.0,
+                                  lineWidth: 10.0,
+                                  progressColor: Colors.blueAccent,
+                                  center: Text(
+                                    "$percent",
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 70,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Visibility(
+                            visible: _showSuccess,
+                            child: Center(
+                              child: Container(
+                                child: Lottie.asset(
+                                    'assets/animations/success.json',
+                                    height: 200,
+                                    repeat: true,
+                                    reverse: true,
+                                    fit: BoxFit.cover),
+                              ),
+                            ),
+                          ),
+                          Visibility(
+                            visible: _showFail,
+                            child: Center(
+                              child: Container(
+                                child: Lottie.asset(
+                                  'assets/animations/fail.json',
+                                  height: 200,
+                                  repeat: true,
+                                  reverse: true,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+            ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
 
 class Tile extends StatefulWidget {
   String imageAssetPath;
   int tileIndex;
-  _MemoryOneScreenState parent;
+  _GameOneState parent;
   Tile({
     required this.imageAssetPath,
     required this.parent,
@@ -721,111 +795,144 @@ class _TileState extends State<Tile> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        if (!selected) {
-          print("------------------");
-          if (selectedImageAssetPath == '') {
-            selectedTileIndex = widget.tileIndex;
-            selectedImageAssetPath =
-                pairs[widget.tileIndex].getImageAssetPath();
-            print(selectedTileIndex);
-            print(selectedImageAssetPath);
-            setState(() {
-              numOfChoose++;
-            });
-            print("hightLight ${widget.parent.highlight}");
-
-            if (numOfChoose <= widget.parent.highlight) {
-              // continue
-              if (selectedImageAssetPath == "assets/yellow.png") {
-                //Correct
-                print("Correct");
-                selected = true;
-                Future.delayed(Duration(milliseconds: 300), () {
-                  selected = false;
-                  score += 200;
-                });
-                // numOfCorrect += 1;
-              } else {
-                // Wrong
-                print("Wrong");
-                selected = true;
-                Future.delayed(Duration(milliseconds: 300), () {
-                  selected = false;
-                });
-                numOfWrong += 1;
-              }
-              selectedImageAssetPath = '';
-              // Đếm số card đã chọn cho mỗi level
-              if (numOfChoose == widget.parent.highlight) {
-                print("End Game");
-
-                if (tries < 12) {
-                  print("Level đã tăng: $level");
-                  print("tries: $tries");
-                  // Xử lý tăng giảm Level
-
-                  if (numOfWrong == 0) {
-                    //  selected = true;
-                    // Level up
-                    print("Level up");
-                    score += 100 * level;
-                    level += 1;
-
-                    Future.delayed(Duration(milliseconds: 300), () {
-                      setState(() {
-                        tries++;
-                      });
-                      widget.parent.setState(() {
-                        widget.parent.countdownTimer!.cancel();
-
-                        widget.parent.init = false;
-                        widget.parent.timerDuration =
-                            const Duration(seconds: 10);
-                        widget.parent.restart();
-                      });
-                    });
-                  } else {
-                    level -= numOfWrong ~/ 2;
-                    print("Level đã tăng: $level");
-
-                    Future.delayed(Duration(milliseconds: 300), () {
-                      setState(() {
-                        numOfWrong = 0;
-                        tries++;
-                      });
-                      widget.parent.setState(() {
-                        widget.parent.countdownTimer!.cancel();
-                        widget.parent.init = false;
-                        widget.parent.timerDuration =
-                            const Duration(seconds: 10);
-                        widget.parent.restart();
-                      });
-                    });
-                  }
-                  if (maxLevel < level) {
-                    maxLevel = level;
-                  }
+      onTap: widget.parent._disableTap
+          ? null
+          : () {
+              // print("You click me");
+              print(selected);
+              print("---------");
+              if (!selected) {
+                if (store.contains(widget.tileIndex) == true) {
+                  // Not check
+                  print("Not check");
                 } else {
-                  widget.parent.setState(() {
-                    widget.parent.endGame();
-                    widget.parent.setMaxLevel();
+                  // Save các ô đã được chọn (Check here)
+                  store.add(widget.tileIndex);
+                  setState(() {
+                    pairs[widget.tileIndex].setIsSelected(true);
                   });
+
+                  if (selectedImageAssetPath == '') {
+                    selectedTileIndex = widget.tileIndex;
+                    selectedImageAssetPath =
+                        pairs[widget.tileIndex].getImageAssetPath();
+                    print(selectedTileIndex);
+                    print(selectedImageAssetPath);
+
+                    if (selectedImageAssetPath == "assets/blue.png") {
+                      // Correct
+                      print("Correct");
+                      numOfCorrect++;
+                      score += 200;
+                      widget.parent.disableTap();
+                    } else {
+                      // Wrong
+                      print("Wrong");
+                      numOfWrong++;
+                      widget.parent.disableTap();
+
+                      // Set result
+                      indexResult.add(widget.tileIndex);
+                      print("Index result: $indexResult");
+                    }
+                    selectedImageAssetPath = '';
+
+                    // continue
+                    if (numOfWrong == error ||
+                        numOfCorrect == widget.parent.highlight ||
+                        timeLeft == 0) {
+                      // End tries game
+                      print("End tries game");
+                      widget.parent.stopTimer();
+                      indexResult = [];
+                      if (tries < 5) {
+                        // exist wrong
+                        if (numOfWrong <= error && numOfWrong > 0) {
+                          setState(() {
+                            widget.parent._disableTap = true;
+                          });
+                          widget.parent.screenLevelDown();
+                          // Future.delayed(Duration(seconds: 4), () {
+                          //   setState(() {
+                          //     widget.parent.levelDown();
+                          //   });
+                          // });
+                          widget.parent._timerLevel =
+                              Timer(Duration(seconds: 4), () {
+                            setState(() {
+                              widget.parent.levelDown();
+                            });
+                          });
+                        }
+
+                        // all correct
+                        if (numOfCorrect == widget.parent.highlight &&
+                            numOfWrong == 0) {
+                          // Hiện icon trong 3s
+
+                          print("all");
+                          setState(() {
+                            widget.parent._disableTap = true;
+                          });
+                          widget.parent.showSuccess();
+
+                          // Future.delayed(Duration(seconds: 3), () {
+                          //   setState(() {
+                          //     widget.parent.levelUp();
+                          //   });
+                          // });
+                          widget.parent._timerLevel =
+                              Timer(Duration(seconds: 3), () {
+                            setState(() {
+                              score += 100 * level;
+                              widget.parent.levelUp();
+                            });
+                          });
+                        }
+                      } else {
+                        print("END");
+                        if (maxLevel < level) {
+                          maxLevel = level;
+                        }
+                        print("level: $level");
+                        print("maxLevel: $maxLevel");
+                        widget.parent.stopTimer();
+                        if (numOfCorrect == widget.parent.highlight &&
+                            numOfWrong == 0) {
+                          setState(() {
+                            widget.parent._disableTap = true;
+                          });
+                          widget.parent.showSuccess();
+                          widget.parent._timerGoResult =
+                              Timer(Duration(seconds: 4), () {
+                            setState(() {
+                              // widget.parent.navigationPage();
+                            });
+                          });
+                        }
+                        if (numOfWrong <= error && numOfWrong > 0) {
+                          setState(() {
+                            widget.parent._disableTap = true;
+                          });
+                          widget.parent.screenLevelDown();
+                          widget.parent._timerGoResult =
+                              Timer(Duration(seconds: 4), () {
+                            setState(() {
+                              // widget.parent.navigationPage();
+                            });
+                          });
+                        }
+                      }
+                    }
+                  }
+
+                  // print(widget.tileIndex);
+                  // print(pairs[widget.tileIndex].getIsSelected());
+                  // print(pairs[widget.tileIndex].getImageAssetPath());
+                  // print(widget.imageAssetPath);
                 }
               }
-            }
-          }
-
-          setState(() {
-            pairs[widget.tileIndex].setIsSelected(true);
-          });
-          print("maxLevel: $maxLevel");
-          print("level: $level");
-          print("numOfChoose $numOfChoose");
-          print("numOfWrong $numOfWrong");
-          print("Click me");
-        }
-      },
+            },
       child: Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
@@ -836,9 +943,9 @@ class _TileState extends State<Tile> {
             borderRadius: BorderRadius.circular(5),
             child: Image.asset(pairs[widget.tileIndex].getIsSelected()
                 ? pairs[widget.tileIndex].getImageAssetPath() ==
-                        "assets/yellow.png"
+                        "assets/blue.png"
                     ? pairs[widget.tileIndex].getImageAssetPath()
-                    : "assets/grey.png"
+                    : "assets/red.png"
                 : widget.imageAssetPath),
           ),
         ),
