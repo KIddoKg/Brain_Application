@@ -100,7 +100,7 @@ class RouteGenerator {
 
     //Languages Game
     languageScreen: (context) => const LanguageScreen(),
-    gameMemory1: (context) => const MemoryOneScreen(),
+    gameMemory1: (context) => const GameOne(),
     gameMemory2: (context) => const MemoryTwoScreen(),
     gameMemory3: (context) => const MemoryThreeScreen(),
 
