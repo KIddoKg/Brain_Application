@@ -120,8 +120,8 @@ class Homepage extends ConsumerWidget {
                               .pushNamed(RouteGenerator.languageScreen);
                         },
                         child: const CustomStack(
-                          image: 'images/language-background.jpg',
-                          icon: 'images/language-icon.jpg',
+                          image: 'assets/LogoGame/language-background.jpg',
+                          icon: 'assets/LogoGame/language-icon.jpg',
                           text1: 'Trò Chơi Ngôn Ngữ',
                           text2: '4 Trò Chơi',
                           padding_left: 5,
@@ -137,8 +137,8 @@ class Homepage extends ConsumerWidget {
                             .pushNamed(RouteGenerator.attentionScreen);
                       },
                       child: const CustomStack(
-                        image: 'images/attention-background.png',
-                        icon: 'images/attention-icon.png',
+                        image: 'assets/LogoGame/attention-background.png',
+                        icon: 'assets/LogoGame/attention-icon.png',
                         text1: 'Trò Chơi Tập Trung',
                         text2: '4 Trò Chơi',
                         padding_left: 7,
@@ -153,8 +153,8 @@ class Homepage extends ConsumerWidget {
                             .pushNamed(RouteGenerator.memoryScreen);
                       },
                       child: const CustomStack(
-                        image: 'images/memory-background.png',
-                        icon: 'images/memory.png',
+                        image: 'assets/LogoGame/memory-background.png',
+                        icon: 'assets/LogoGame/memory.png',
                         text1: 'Trò Chơi Ghi Nhớ',
                         text2: '4 Trò Chơi',
                         padding_left: 4,
@@ -169,8 +169,8 @@ class Homepage extends ConsumerWidget {
                             .pushNamed(RouteGenerator.mathScreen);
                       },
                       child: const CustomStack(
-                        image: 'images/math-background.png',
-                        icon: 'images/math-icon.jpg',
+                        image: 'assets/LogoGame/math-background.png',
+                        icon: 'assets/LogoGame/math-icon.jpg',
                         text1: 'Trò Chơi Tính Toán',
                         text2: '2 Trò Chơi',
                         padding_left: 8,
