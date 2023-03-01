@@ -51,7 +51,9 @@ class GameInstruction {
         vecto = this.source.position;
         if (component != null) {
           controller.add(component);
-          controller.buildingWeapon?.removeFromParent();
+          // if(component == component.blockMap) {
+            controller.buildingWeapon?.removeFromParent();
+          // }
           controller.buildingWeapon = component;
           component.blockMap = component.collision(controller.rc01) ||
               component.collision(controller.rc02) ||
@@ -167,24 +169,24 @@ class GameInstruction {
         // controller.gameRef.weaponFactory.onBuildDone(source as WeaponComponent);
         // controller.gameRef.mapController.astarMapAddObstacle(source.position);
 
-        WeaponComponent? component =
-            controller.gameRef.weaponFactory.buildWeapon(this.source.position);
+        // WeaponComponent? component =
+        //     controller.gameRef.weaponFactory.buildWeapon(this.source.position);
         // controller.buildingWeapon = null;
         // await Future.delayed(Duration(seconds: 2));
-        if (controller.buildingWeapon != null) {
-          controller.send(
-              controller.buildingWeapon!, GameControl.WEAPON_BUILDING);
-          // controller.processEnemySmartMove();
-          // var intValue = Random().nextInt(4);
-
-          // if(intValue > 2){
-          //   controller.processEnemySmartMove2();
-          // } else if(intValue < 2){
-          //   controller.processEnemySmartMove3();
-          // }else if (intValue == 2){
-          //   controller.processEnemySmartMove();
-          // }
-        }
+        // if (controller.buildingWeapon != null) {
+        //   controller.send(
+        //       controller.buildingWeapon!, GameControl.WEAPON_BUILDING);
+        //   // controller.processEnemySmartMove();
+        //   // var intValue = Random().nextInt(4);
+        //
+        //   // if(intValue > 2){
+        //   //   controller.processEnemySmartMove2();
+        //   // } else if(intValue < 2){
+        //   //   controller.processEnemySmartMove3();
+        //   // }else if (intValue == 2){
+        //   //   controller.processEnemySmartMove();
+        //   // }
+        // }
 
         // print(source.position);
         // print(component.collision(controller.gateStart));

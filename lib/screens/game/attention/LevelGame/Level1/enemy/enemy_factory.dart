@@ -79,19 +79,19 @@ class EnemyFactory extends GameComponent {
     gameRef.gameController.send(this, GameControl.ENEMY_NEXT_WAVE);
     switch (currentWave) {
       case 1:
-        spawnEnemy(5, 6, spawnEnemyA);
+        spawnEnemy(5, 2, spawnEnemyA);
         break;
       case 2:
-        spawnEnemy(5, 5, spawnEnemyA);
+        spawnEnemy(5, 2, spawnEnemyA);
         break;
       case 3:
-        spawnEnemy(5, 4, spawnEnemyA);
+        spawnEnemy(5, 2, spawnEnemyA);
         break;
       case 4:
-        spawnEnemy(5, 3, spawnEnemyA);
+        spawnEnemy(5, 1, spawnEnemyA);
         break;
       default:
-        spawnEnemy(5, 2, spawnEnemyA);
+        spawnEnemy(5, 1, spawnEnemyA);
         break;
     }
   }

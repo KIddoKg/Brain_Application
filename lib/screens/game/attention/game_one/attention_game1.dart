@@ -7,8 +7,12 @@ import 'package:brain_application/theme_color/light_colors.dart';
 // import 'package:brain_training/utils/custom_dialog.dart';
 // import 'package:brain_training/constants/color.dart';
 // import 'package:brain_training/widget/clock.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brain_application/widgets/components/custom_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'ImagePass.dart';
+import 'ResultTest.dart';
 
 class AttentionGameOne extends StatefulWidget {
   const AttentionGameOne({super.key});
@@ -16,11 +20,24 @@ class AttentionGameOne extends StatefulWidget {
   @override
   State<AttentionGameOne> createState() => _AttentionGameOneState();
 }
+class Result {
+  final int score;
+  final String message;
 
+  Result(this.score, this.message);
+}
+class ImagePass {
+  // final int score;
+  final String score;
+  final List<String> message;
+
+  ImagePass(this.score, this.message);
+}
 class _AttentionGameOneState extends State<AttentionGameOne> {
   final int totalDurationInSeconds = 120;
-  final int answerDurationInSeconds = 15;
+  final int answerDurationInSeconds = 60;
   final int POINT_PER_CORRECT_ANSWER = 200;
+  int count =0;
   final String game1_attention =
       "lib/data/data_attention/game_one_attention.json";
   final String key_data = "attentionData";
@@ -34,6 +51,8 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
 
   List<String> imagesAssetPath = [];
   List<String> solutionAssetPath = [];
+  List<String> solutionAssetPathUsed = [];
+  List<String> imagesAssetPathUsed =[];
   List gameData = [];
   late int currentKey; // ID of image key
 
@@ -47,6 +66,22 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
   late double scaleRatio;
   late CustomDialog dialog;
 
+  setImageUsed() async {
+    // Obtain shared preferences.
+    final imageUsedAttendtion1 = await SharedPreferences.getInstance();
+    List<String>? _imageUsedAttendtion1  = imageUsedAttendtion1.getStringList("imageUsedAttendtion1");
+    final imageSolutionAttendtion1 = await SharedPreferences.getInstance();
+    List<String>? _imageSolutionAttendtion1  = imageSolutionAttendtion1.getStringList("imageSolutionAttendtion1");
+      setState(() {
+        imagesAssetPathUsed = _imageUsedAttendtion1!.toList();
+        solutionAssetPathUsed = _imageSolutionAttendtion1!.toList();
+        print(solutionAssetPathUsed);
+      // imagesAssetPathUsed =["assets/images/Attention/Question/6.png", "assets/images/Attention/Question/12.png", "assets/images/Attention/Question/11.png", "assets/images/Attention/Question/1.png", "assets/images/Attention/Question/21.png," "assets/images/Attention/Question/5.png", "assets/images/Attention/Question/14.png"," assets/images/Attention/Question/4.png", "assets/images/Attention/Question/18.png", "assets/images/Attention/Question/24.png","assets/images/Attention/Question/19.png", "assets/images/Attention/Question/30.png", "assets/images/Attention/Question/9.png"," assets/images/Attention/Question/36.png", "assets/images/Attention/Question/7.png", "assets/images/Attention/Question/16.png", "assets/images/Attention/Question/31.png", "assets/images/Attention/Question/34.png", "assets/images/Attention/Question/28.png", "assets/images/Attention/Question/37.png", "assets/images/Attention/Question/2.png," "assets/images/Attention/Question/20.png", "assets/images/Attention/Question/10.png"," assets/images/Attention/Question/35.png", "assets/images/Attention/Question/8.png", "assets/images/Attention/Question/27.png", "assets/images/Attention/Question/38.png", "assets/images/Attention/Question/26.png", "assets/images/Attention/Question/22.png", "assets/images/Attention/Question/29.png", "assets/images/Attention/Question/3.png", "assets/images/Attention/Question/15.png", "assets/images/Attention/Question/40.png", "assets/images/Attention/Question/13.png", "assets/images/Attention/Question/23.png","assets/images/Attention/Question/35.png", "assets/images/Attention/Question/17.png", "assets/images/Attention/Question/4.png", "assets/images/Attention/Question/21.png", "assets/images/Attention/Question/20.png", "assets/images/Attention/Question/39.png", "assets/images/Attention/Question/2.png", "assets/images/Attention/Question/5.png", "assets/images/Attention/Question/36.png", "assets/images/Attention/Question/25.png"]
+      // ;
+    });
+  }
+
+
   // Timer
   void startQuestionTimer() {
     questionDuration = Duration(seconds: answerDurationInSeconds);
@@ -55,6 +90,7 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
   }
 
   void startTotalTimer() {
+    setImageUsed();
     totalDuration = Duration(seconds: totalDurationInSeconds);
     totalCountdownTimer =
         Timer.periodic(const Duration(seconds: 1), (_) => setTotalCountDown());
@@ -93,8 +129,13 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
   }
 
   // Timer Logic
-  void outOfQuestionTime() {
+  Future<void> outOfQuestionTime() async {
     setCancelQuestionTimer();
+    final imageUsedAttendtion1 = await SharedPreferences.getInstance();
+    await imageUsedAttendtion1.setStringList('imageUsedAttendtion1', imagesAssetPathUsed);
+    final imageSolutionAttendtion1 = await SharedPreferences.getInstance();
+    await imageSolutionAttendtion1.setStringList('imageSolutionAttendtion1', solutionAssetPathUsed);
+    CountCorrect();
     if (checkEndGame()) {
       return handleEndGame();
     }
@@ -103,22 +144,33 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
 
   // Question Logic
   void nextQuestion() {
+
+    // if(imagesAssetPath.length == currentQuestion+1){
+    //   handleEndGame();
+    // }
     setState(() {
       isCorrect = false;
       currentQuestion++;
       currentKey = getCurrentKeyValue(imagesAssetPath[currentQuestion]);
     });
-
     scaleRatio = calculateImageScale(currentKey);
     startQuestionTimer();
   }
 
   bool checkEndGame() {
-    if (currentQuestion >= imagesAssetPath.length - 1 ||
-        totalDuration.inSeconds < 0) {
+
+    if (totalDuration.inSeconds < 0) {
       return true;
     }
     return false;
+  }
+
+  void imagePass(){
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) =>
+        ImagePassScreen(imagePass: ImagePass("o",solutionAssetPathUsed))),);
   }
 
   void handleEndGame() {
@@ -132,87 +184,92 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
     int bonusPoint = calculateBonusPoint(avgTime);
     int totalPoint = point + bonusPoint;
 
-    dialog.show(
-        Text("HẾT GIỜ",
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                color: Colors.red, fontSize: 40, fontWeight: FontWeight.w600)),
-        SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              Text(
-                "Số vòng chơi vượt qua: ${correctAnswer}",
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 22,
-                    color: Colors.black,
-                    decoration: TextDecoration.none),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                "Thời gian trung bình: ${avgTime} s",
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 23,
-                    color: Colors.black,
-                    decoration: TextDecoration.none),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                "Điểm của bạn:        ",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 25,
-                    color: Colors.black,
-                    decoration: TextDecoration.none),
-              ),
-              Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/images/poly-twist-knots.png',
-                          width: 170,
-                        ),
-                        Text(
-                          "$totalPoint",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 30,
-                              decoration: TextDecoration.none),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        [
-          Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.only(left: 50, right: 50),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-              color: Colors.orange,
-            ),
-            child: TextButton(
-              child: const Text('Chơi lại',
-                  style: TextStyle(fontSize: 20, color: Colors.white)),
-              onPressed: () {
-                Navigator.of(context).pop();
-                restartGame();
-              },
-            ),
-          )
-        ]);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ResultScreen(result: Result(totalPoint, 'Success!'))),
+    );
+    // dialog.show(
+    //     Text("HẾT GIỜ",
+    //         textAlign: TextAlign.center,
+    //         style: const TextStyle(
+    //             color: Colors.red, fontSize: 40, fontWeight: FontWeight.w600)),
+    //     SingleChildScrollView(
+    //       child: ListBody(
+    //         children: <Widget>[
+    //           Text(
+    //             "Số vòng chơi vượt qua: ${correctAnswer}",
+    //             textAlign: TextAlign.center,
+    //             style: const TextStyle(
+    //                 fontSize: 22,
+    //                 color: Colors.black,
+    //                 decoration: TextDecoration.none),
+    //           ),
+    //           const SizedBox(height: 10),
+    //           Text(
+    //             "Thời gian trung bình: ${avgTime} s",
+    //             textAlign: TextAlign.center,
+    //             style: const TextStyle(
+    //                 fontSize: 23,
+    //                 color: Colors.black,
+    //                 decoration: TextDecoration.none),
+    //           ),
+    //           const SizedBox(height: 10),
+    //           const Text(
+    //             "Điểm của bạn:        ",
+    //             textAlign: TextAlign.center,
+    //             style: TextStyle(
+    //                 fontSize: 25,
+    //                 color: Colors.black,
+    //                 decoration: TextDecoration.none),
+    //           ),
+    //           Stack(
+    //             alignment: Alignment.topCenter,
+    //             children: [
+    //               Padding(
+    //                 padding: const EdgeInsets.only(top: 10, bottom: 10),
+    //                 child: Stack(
+    //                   alignment: Alignment.center,
+    //                   children: [
+    //                     Image.asset(
+    //                       'assets/images/poly-twist-knots.png',
+    //                       width: 170,
+    //                     ),
+    //                     Text(
+    //                       "$totalPoint",
+    //                       textAlign: TextAlign.center,
+    //                       style: const TextStyle(
+    //                           color: Colors.black,
+    //                           fontWeight: FontWeight.bold,
+    //                           fontSize: 30,
+    //                           decoration: TextDecoration.none),
+    //                     ),
+    //                   ],
+    //                 ),
+    //               ),
+    //             ],
+    //           ),
+    //         ],
+    //       ),
+    //     ),
+    //     [
+    //       Container(
+    //         margin: const EdgeInsets.only(bottom: 10),
+    //         padding: const EdgeInsets.only(left: 50, right: 50),
+    //         decoration: BoxDecoration(
+    //           borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+    //           color: Colors.orange,
+    //         ),
+    //         child: TextButton(
+    //           child: const Text('Chơi lại',
+    //               style: TextStyle(fontSize: 20, color: Colors.white)),
+    //           onPressed: () {
+    //             Navigator.of(context).pop();
+    //             restartGame();
+    //           },
+    //         ),
+    //       )
+    //     ]);
   }
 
   void restartGame() {
@@ -255,11 +312,20 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
         .toList();
 
     solutionAssetPath = solutionImagePath;
-    imagesAssetPath = attentionImagePath;
+    attentionImagePath.removeWhere((element) => imagesAssetPathUsed.contains(element));
+    if(attentionImagePath.length >= 12){
+      imagesAssetPath = attentionImagePath;
+    }
+
   }
 
   void setupImages() {
     imagesAssetPath.shuffle();
+
+
+    if(imagesAssetPath.isEmpty){
+      handleEndGame();
+    }
     setState(() {
       currentKey = getCurrentKeyValue(imagesAssetPath[currentQuestion]);
     });
@@ -267,7 +333,6 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
 
   // Game Logic
   void onTapDown(BuildContext context, TapDownDetails details) {
-    // print(currentKey);
     int imageOriginalWidth = gameData[currentKey - 1]["size"]["x"];
     int imageOriginalHeight = gameData[currentKey - 1]["size"]["y"];
     int resultOriginalWidth = gameData[currentKey - 1]["result"]["x"];
@@ -280,18 +345,14 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
 
     double posX = details.localPosition.dx;
     double posY = details.localPosition.dy;
-    // print("posX: $posX, posY: $posY");
 
     double resultX = boxWidth / 2 + resultXFromCenterImage * scaleRatio;
     double resultY = boxHeight / 2 + resultYFromCenterImage * scaleRatio;
-    // print("resultX: $resultX, resultY: $resultY");
 
     double validWidthRange =
         gameData[currentKey - 1]["valid_box"]["x"] * scaleRatio / 2;
     double validHeightRange =
         gameData[currentKey - 1]["valid_box"]["y"] * scaleRatio / 2;
-    // print(
-    //     "validWidthRange: $validWidthRange, validHeightRange: $validHeightRange");
 
     if (posX >= resultX - validWidthRange &&
         posX <= resultX + validWidthRange &&
@@ -299,15 +360,55 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
         posY <= resultY + validHeightRange) {
       handleCorrectAnswer();
     }
+
+  }
+  Future<void> CountCorrect() async {
+
+    if(isCorrect == true){
+      count++;
+    }else if (isCorrect == false){
+      count = 0;
+    }
+    Set<String> uniqueItems = Set<String>.from(imagesAssetPathUsed);
+
+
+    if(count>=3){
+      for(var i =0; i<count;i++){
+        uniqueItems.add(imagesAssetPath[currentQuestion-i]);
+      }
+      imagesAssetPathUsed = List<String>.from(uniqueItems);
+      Set<String> uniqueSolutionItems = Set<String>.from(solutionAssetPathUsed);
+      for(var i = 0; i<imagesAssetPathUsed.length; i++){
+        uniqueSolutionItems.add(solutionAssetPath.firstWhere((element) => element.split("/").last
+            == imagesAssetPathUsed[i].split("/").last));
+      }
+      solutionAssetPathUsed = List<String>.from(uniqueSolutionItems);
+    }
+
+    // setState(() {
+    //   isCorrect = true;
+    //   point += POINT_PER_CORRECT_ANSWER;
+    //
+    //
+    // });
+    // await Future.delayed(Duration(seconds: 3));
+    // nextQuestion();
+    // if (checkEndGame()) {
+    //   handleEndGame();
+    // }
   }
 
   Future<void> handleCorrectAnswer() async {
     setCancelQuestionTimer();
     totalAnswerTime += answerDurationInSeconds - questionDuration.inSeconds;
+
     setState(() {
       isCorrect = true;
       point += POINT_PER_CORRECT_ANSWER;
+      // imagesAssetPathUsed.add(imagesAssetPath[currentQuestion]);
+
     });
+    CountCorrect();
     await Future.delayed(Duration(seconds: 3));
     nextQuestion();
     if (checkEndGame()) {
@@ -353,9 +454,11 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
   @override
   void initState() {
     super.initState();
-
+    setImageUsed();
+    CountCorrect();
     dialog = CustomDialog(context: context);
     _loadAssetsFiles().then((val) {
+      // setImageUsed();
       setupImages();
       readJson(game1_attention, key_data).then((imageData) {
         gameData = imageData;
@@ -389,9 +492,10 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
             ),
             TextButton(
               child: Text('Có'),
-              onPressed: () {
+              onPressed: () async {
                 back = true;
                 Navigator.pop(context, back);
+
               },
             ),
           ],
@@ -498,6 +602,17 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
                                           },
                                           icon: const Icon(
                                             Icons.question_mark_rounded,
+                                            size: 35,
+                                          ),
+                                          color: Colors.black,
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            imagePass();
+                                            // _dialogBuilderTwo(context);
+                                          },
+                                          icon: const Icon(
+                                            Icons.settings,
                                             size: 35,
                                           ),
                                           color: Colors.black,
@@ -724,7 +839,12 @@ class _AttentionGameOneState extends State<AttentionGameOne> {
                                                   fit: BoxFit.scaleDown,
                                                 ))))
                             ])
-                          : Container()
+                          : Container(
+                        child: Text("Hiện tại thư viện câu hỏi đang được cập nhập. Bạn vui lòng quay lại sau nha !!!",
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+
                     ],
                   )
                   //   Expanded(

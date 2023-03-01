@@ -24,14 +24,14 @@ class _GameMath2ScreenState extends ConsumerState<GameMath2Screen> {
   void initState() {
     super.initState();
     final room = ref.read(roomProvider);
-    final roomRef = FirebaseDatabase.instance.ref('room/${room.roomName}');
+    // final roomRef = FirebaseDatabase.instance.ref('room/${room.roomName}');
 
-    roomRef.onValue.listen((DatabaseEvent event) {
-      final roomAsMap = event.snapshot.value;
-      final list =
-          List<String>.generate(4, (index) => (roomAsMap! as Map)['q$index']);
-      room.updateQuestions(list);
-    });
+    // roomRef.onValue.listen((DatabaseEvent event) {
+    //   final roomAsMap = event.snapshot.value;
+    //   final list =
+    //       List<String>.generate(4, (index) => (roomAsMap! as Map)['q$index']);
+    //   room.updateQuestions(list);
+    // });
   }
 
   @override
