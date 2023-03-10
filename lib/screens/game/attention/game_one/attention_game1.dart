@@ -34,7 +34,7 @@ class ImagePass {
   ImagePass(this.score, this.message);
 }
 class _AttentionGameOneState extends State<AttentionGameOne> {
-  final int totalDurationInSeconds = 120;
+  final int totalDurationInSeconds = 10;
   final int answerDurationInSeconds = 60;
   final int POINT_PER_CORRECT_ANSWER = 200;
   int count =0;
