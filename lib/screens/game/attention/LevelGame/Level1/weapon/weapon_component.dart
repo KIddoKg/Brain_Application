@@ -174,48 +174,49 @@ class WeaponComponent extends GameComponent
   }
 
   @override
-  void render(Canvas canvas) {
-    if (buildDone == false || dialogVisible == true) {
-      Color? color = buildAllowed ? Colors.green[200] : Colors.red[200];
-      /*build indicator */
-      canvas.drawRect(size.toRect(), Paint()..color = color!.withOpacity(0.3));
-      canvas.drawCircle(
-          (size / 2).toOffset(),
-          range,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..color = Colors.red);
-      if (dialogVisible == true) {
-        Color? color = buildAllowed ? Colors.blue[200] : Colors.red[200];
-        /*build indicator */
-        canvas.drawRect(
-            size.toRect(), Paint()..color = color!.withOpacity(0.3));
-        canvas.drawCircle(
-            (size / 2).toOffset(),
-            range * 1.25,
-            Paint()
-              ..style = PaintingStyle.stroke
-              ..color = Colors.red);
-      }
-    }
+  // void render(Canvas canvas) {
+  //   if (buildDone == false || dialogVisible == true) {
+  //     Color? color = buildAllowed ? Colors.green[200] : Colors.red[200];
+  //     /*build indicator */
+  //     canvas.drawRect(size.toRect(), Paint()..color = color!.withOpacity(0.3));
+  //     canvas.drawCircle(
+  //         (size / 2).toOffset(),
+  //         range,
+  //         Paint()
+  //           ..style = PaintingStyle.stroke
+  //           ..color = Colors.red);
+  //     if (dialogVisible == true) {
+  //       Color? color = buildAllowed ? Colors.blue[200] : Colors.red[200];
+  //       /*build indicator */
+  //       canvas.drawRect(
+  //           size.toRect(), Paint()..color = color!.withOpacity(0.3));
+  //       canvas.drawCircle(
+  //           (size / 2).toOffset(),
+  //           range * 1.25,
+  //           Paint()
+  //             ..style = PaintingStyle.stroke
+  //             ..color = Colors.red);
+  //     }
+  //   }
+  //
+  //   super.render(canvas);
+  // }
 
-    super.render(canvas);
-  }
 
   @override
   bool onTapDown(TapDownInfo event) {
     if (buildDone == false) {
       if (buildAllowed) {
-        gameRef.gameController.send(this, GameControl.WEAPON_BUILD_DONE);
+        gameRef.gameController.send(this, GameControl.WEAPON_BUILDING);
         onBuildDone();
       }
-    } else {
-      if (active) {
-        gameRef.gameController.send(this, GameControl.WEAPON_SHOW_ACTION);
-      } else {
-        return true;
-        // gameRef.gameController.send(this, GameControl.WEAPON_SHOW_PROFILE);
-      }
+    // } else {
+    //   if (active) {
+    //     gameRef.gameController.send(this, GameControl.WEAPON_SHOW_ACTION);
+    //   } else {
+    //     return true;
+    //     // gameRef.gameController.send(this, GameControl.WEAPON_SHOW_PROFILE);
+    //   }
     }
 
     return false;

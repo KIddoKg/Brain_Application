@@ -7,6 +7,7 @@ class CustomDialog {
 
   Future<void> show(
       Widget titleWidget, Widget contentWidget, List<Widget> actionWidget) {
+
     return showDialog<void>(
       context: context,
       barrierDismissible: false,

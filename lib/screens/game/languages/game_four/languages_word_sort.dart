@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:brain_application/data/data_language/list_question_four.dart';
 import 'package:flutter/material.dart';
@@ -77,17 +78,24 @@ class _WordFindWidgetState extends State<WordFindWidget> {
   late Size size;
   late SharedPreferences prefs;
   late List<WordFindQues> listQuestions;
+  final int answerDurationInSeconds = 30;
   int indexQues = 0; // current index question
   int hintCount = 0;
   List bao = [0, 1, 2, 3, 4];
   int count = 0;
+  bool timeHint = false;
   var i = 0;
   int best = 0;
   int count2 = 3;
   var nextcount = 0;
+  int reduceSecondsBy = 1;
   bool back = false;
+  bool stopTime = false;
+  Timer? countdownTimer;
+  Duration answerDuration = const Duration();
   // thanks for watching.. :)
-
+  int _counter = 10;
+  late Timer _timer;
   // setLevel2() async {
   //   // for (var i = 0; i < count2; i++) {
   //   //   indexQues++;
@@ -105,15 +113,17 @@ class _WordFindWidgetState extends State<WordFindWidget> {
     size = widget.size;
     listQuestions = widget.listQuestions;
     getLevel();
-    // setLevel();
-    // setLevel2();
-
-    // indexQues;
     generateHint();
     generatePuzzle();
-    // generateHintAll();
-    // setLevel();
-    // setLevel3();
+  startTimer();
+  }
+
+  @override
+  void dispose() {
+    // countdownTimer!.cancel();
+    _timer.cancel();
+    super.dispose();
+
   }
 
   getLevel() async {
@@ -123,8 +133,8 @@ class _WordFindWidgetState extends State<WordFindWidget> {
     // final prefs = await SharedPreferences.getInstance();
     int level = prefs.getInt(ShareData.level) ?? 0;
 
+    best = level.toInt();
     setState(() {
-      best = level.toInt();
       indexQues = level.toInt();
       size = widget.size;
       // listQuestions = value.toString() as List<WordFindQues>;
@@ -132,13 +142,44 @@ class _WordFindWidgetState extends State<WordFindWidget> {
     });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    // listQuestions = widget.listQuestions;
-    // getLevel();
-    // size = widget.size;
-    // generateHint();
+
+
+  void startTimer() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_counter > 0) {
+          _counter--;
+        } else {
+          timeHint = true;
+          setEndTimer();
+        }
+      });
+    });
+
+  }
+
+  // void setCountDown() {
+  //
+  //     reduceSecondsBy = 1;
+  //   setState(() {
+  //     final seconds = answerDuration.inSeconds - reduceSecondsBy;
+  //     print(seconds);
+  //     if (seconds == 0) {
+  //       timeHint = true;
+  //       countdownTimer!.cancel();
+  //     } else {
+  //       answerDuration = Duration(seconds: seconds);
+  //     }
+  //   }
+  //   );
+  // }
+
+  void setEndTimer() {
+    _timer.cancel();
+      setState(() {
+        startTimer();
+      });
+
   }
 
   // setLevel() {
@@ -173,6 +214,8 @@ class _WordFindWidgetState extends State<WordFindWidget> {
   //   // setLevel2();
   // }
 
+
+
   Future<bool?> showMyDialog(BuildContext context) {
     return showDialog<bool>(
       context: context,
@@ -198,7 +241,6 @@ class _WordFindWidgetState extends State<WordFindWidget> {
 
                 // await prefs.setString(
                 //     ShareData.counter, listQuestions.toString());
-                print(indexQues);
               },
             ),
           ],
@@ -265,12 +307,13 @@ class _WordFindWidgetState extends State<WordFindWidget> {
     WordFindQues currentQues = listQuestions[indexQues];
     var ColorsHint;
     var test = int.parse(currentQues.count);
-    if (count2 > 1) {
+    if (count2 > 1 && timeHint == true ) {
       ColorsHint = Colors.yellow[900];
-    } else {
+    } else{
       ColorsHint = LightColors.kLightYellow;
     }
     ;
+
     // ignore: unnecessary_type_check
     assert(test is int);
     return WillPopScope(
@@ -418,8 +461,9 @@ class _WordFindWidgetState extends State<WordFindWidget> {
                                                       children: [
                                                         InkWell(
                                                           onTap: () async {
-                                                            if (count2 > 1) {
+                                                            if (count2 > 1 && timeHint == true) {
                                                               generateHint();
+                                                              timeHint = false;
                                                             }
                                                             ;
                                                           },
@@ -456,7 +500,7 @@ class _WordFindWidgetState extends State<WordFindWidget> {
                                                     Row(
                                                       children: [
                                                         InkWell(
-                                                          onLongPress: () {
+                                                          onTap : () {
                                                             generatePuzzle(
                                                                 left: true);
                                                             generateHintAll();
@@ -470,7 +514,7 @@ class _WordFindWidgetState extends State<WordFindWidget> {
                                                           ),
                                                         ),
                                                         InkWell(
-                                                          onLongPress:
+                                                          onTap:
                                                               () async {
                                                             generatePuzzle(
                                                                 next: true);
@@ -658,10 +702,18 @@ class _WordFindWidgetState extends State<WordFindWidget> {
 
                             return LayoutBuilder(
                               builder: (context, constraints) {
-                                Color color = statusBtn
-                                    ? Color(0xFFFFD600)
+                                Color? color = statusBtn
+                                    // ? Color(0xFFFFD600)
+                                    // : Color(0xFFFFFD9D);
+                                    ? Color(0xFFFFF9EC)
                                     : Color(0xFFFFFD9D);
+                                var ColorsRemove;
+                                if(statusBtn == true){
+                                  ColorsRemove = Colors.white;
 
+                                }else{
+                                  ColorsRemove = Colors.black;
+                                }
                                 return Container(
                                   decoration: BoxDecoration(
                                     color: color,
@@ -674,8 +726,8 @@ class _WordFindWidgetState extends State<WordFindWidget> {
                                     child: Text(
                                       "${currentQues.arrayBtns[index]}"
                                           .toUpperCase(),
-                                      style: const TextStyle(
-                                        color: Colors.black,
+                                      style: TextStyle(
+                                        color: ColorsRemove,
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -706,7 +758,9 @@ class _WordFindWidgetState extends State<WordFindWidget> {
     bool next: false,
     bool left: false,
   }) async {
-    nextcount = 0;
+    _counter = 10;
+    // startTimer();
+    nextcount = Random().nextInt(listQuestions.length);
     count2 = 3;
 
     // lets finish up generate puzzle
@@ -714,6 +768,7 @@ class _WordFindWidgetState extends State<WordFindWidget> {
       indexQues = 0;
       this.listQuestions = <WordFindQues>[];
       this.listQuestions.addAll(loop);
+
     } else {
       if (next &&
           listQuestions[indexQues].isDone &&
@@ -721,20 +776,18 @@ class _WordFindWidgetState extends State<WordFindWidget> {
         nextcount++;
         await Future.delayed(Duration(seconds: 1));
         indexQues++;
-
+        timeHint = false;
         if (indexQues != 0 &&
             indexQues > best &&
             indexQues < listQuestions.length - 1) {
-          best++;
+          best++;timeHint = false;setEndTimer();
         }
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt(ShareData.level, best.toInt());
 
-        print("bao${best}");
       } else if (left && indexQues != 0) {
-        // setLevel2();
-        indexQues--;
+        indexQues--;timeHint = false;setEndTimer();
       } else if (indexQues >= listQuestions.length - 1) return;
 
       setState(() {});
@@ -748,7 +801,7 @@ class _WordFindWidgetState extends State<WordFindWidget> {
 
     setState(() {});
 
-    final List<String> wl = [currentQues.shuffled];
+    final List<String> wl = [currentQues.answer];
     var test = int.parse(currentQues.count);
     assert(test is int);
     final WSSettings ws = WSSettings(
@@ -766,7 +819,7 @@ class _WordFindWidgetState extends State<WordFindWidget> {
     // check if got error generate random word
     if (newPuzzle.errors.isEmpty) {
       currentQues.arrayBtns = newPuzzle.puzzle.expand((list) => list).toList();
-
+      currentQues.arrayBtns.shuffle();
       bool isDone = currentQues.isDone;
 
       if (!isDone) {
@@ -792,14 +845,17 @@ class _WordFindWidgetState extends State<WordFindWidget> {
 
     if (puzzleNoHints.length > 0 && count2 > 0) {
       hintCount++;
-      int indexHint = Random().nextInt(puzzleNoHints.length);
+      // int indexHint = Random().nextInt(puzzleNoHints.length);
+      // int indexHint2 = Random().nextInt(puzzleNoHints.length);
+      int indexHint = 0;
+      int indexHint2 = currentQues.hintindex.toInt();
       int countTemp = 0;
-      // print("hint $indexHint");
+      print(currentQues.hintindex);
 
       currentQues.puzzles = currentQues.puzzles.map((puzzle) {
         if (!puzzle.hintShow && puzzle.currentIndex == null) countTemp++;
 
-        if (indexHint == countTemp - 1) {
+        if (indexHint == countTemp - 1 || indexHint2 == countTemp - 1  ) {
           puzzle.hintShow = true;
           puzzle.currentValue = puzzle.correctValue;
           count2--;
@@ -815,10 +871,13 @@ class _WordFindWidgetState extends State<WordFindWidget> {
       if (await currentQues.fieldCompleteCorrect()) {
         currentQues.isDone = true;
 
-        setState(() {});
+        setState(() {
+
+        });
 
         await Future.delayed(Duration(seconds: 1));
         generatePuzzle(next: true);
+
       }
 
       // my wrong..not refresh.. damn..haha
@@ -903,6 +962,7 @@ class _WordFindWidgetState extends State<WordFindWidget> {
 class WordFindQues {
   var question;
   var shuffled;
+  var hintindex;
   var count;
   var answer;
   bool isDone = false;
@@ -912,9 +972,9 @@ class WordFindQues {
 
   WordFindQues({
     this.count,
-    this.shuffled,
     this.question,
     this.answer,
+    this.hintindex,
     // this.arrayBtns,
   });
 
@@ -954,8 +1014,8 @@ class WordFindQues {
     return new WordFindQues(
       answer: this.answer,
       count: this.count,
+      hintindex:this.hintindex,
       question: this.question,
-      shuffled: this.shuffled,
     );
   }
 
