@@ -73,13 +73,13 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
   setStartLetter() async {
     // Obtain shared preferences.
     final letterUsedLanguage1 = await SharedPreferences.getInstance();
-    List<String>? _letterUsedLanguage1 = letterUsedLanguage1.getStringList("letterUsedLanguage1");
+    List<String>? _letterUsedLanguage1 =
+        letterUsedLanguage1.getStringList("letterUsedLanguage1");
 
     setState(() {
-       _usedLetter =_letterUsedLanguage1!.toList();
+      _usedLetter = _letterUsedLanguage1!.toList();
     });
   }
-
 
   void setEndTimer() {
     countdownTimer!.cancel();
@@ -128,7 +128,6 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
     final data = await json.decode(response);
     print(data["word"].length);
 
-
     for (var i = 0; i < data["word"].length; i++) {
       String firstCharacter2 = data["word"][i].split(' ')[0];
       if (value == firstCharacter2) {
@@ -168,19 +167,19 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
     bool checkramdomLetter = await randomLetter(firstCharacter);
 
     setState(() {
-      if(checkramdomLetter){
+      if (checkramdomLetter) {
         _firstLetter.add(firstCharacter);
-        firstLetter = _firstLetter[1] ;
+        firstLetter = _firstLetter[1];
         letterList = data["letter"];
         _usedLetter.add(firstCharacter);
         letterUsedLanguage1.setStringList('letterUsedLanguage1', _usedLetter);
         print(_usedLetter);
-      }
-      else if(!checkramdomLetter && (_usedLetter.length < data["letter"].length)){
+      } else if (!checkramdomLetter &&
+          (_usedLetter.length < data["letter"].length)) {
         fetchRandomCharacter();
-      }
-      else if(!checkramdomLetter && (_usedLetter.length >= data["letter"].length)){
-        _usedLetter=[];
+      } else if (!checkramdomLetter &&
+          (_usedLetter.length >= data["letter"].length)) {
+        _usedLetter = [];
         fetchRandomCharacter();
       }
 
@@ -190,7 +189,7 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
 
   void handleClickCheck() async {
     String userAnswer = controllerInput.text;
-    String firstLetter =  _firstLetter[1];
+    String firstLetter = _firstLetter[1];
     String checkingWord = "$firstLetter$userAnswer";
     numberWord = _firstLetter.length - 1;
     bool isValidWord = await checkValidWord(checkingWord);
@@ -318,10 +317,8 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => ListView(
-
         padding: const EdgeInsets.symmetric(horizontal: 20),
         children: [
-
           Padding(
             padding: const EdgeInsets.only(top: 80),
             child: AutoSizeText(title,
@@ -334,8 +331,7 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
                 textAlign: TextAlign.center),
           ),
           Container(
-            width:  size.width * 0.1,
-
+            width: size.width * 0.1,
             margin: const EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
@@ -424,7 +420,6 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
                       AutoSizeText(
                         "Danh sách từ đúng:$_userLetter",
                         textAlign: TextAlign.center,
-
                         minFontSize: 16,
                         style: TextStyle(
                             fontSize: 25,
@@ -466,8 +461,10 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
               onPressed: () async {
                 back = true;
                 Navigator.pop(context, back);
-                final letterUsedLanguage1 = await SharedPreferences.getInstance();
-                await letterUsedLanguage1.setStringList('letterUsedLanguage1', _usedLetter);
+                final letterUsedLanguage1 =
+                    await SharedPreferences.getInstance();
+                await letterUsedLanguage1.setStringList(
+                    'letterUsedLanguage1', _usedLetter);
               },
             ),
           ],
@@ -549,13 +546,11 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
                                         children: [
                                           IconButton(
                                             onPressed: () async {
-
                                               final back =
                                                   await showMyDialog(context);
                                               if (back == true) {
                                                 Navigator.pop(context, back);
                                               }
-
                                             },
                                             icon: const Icon(
                                               Icons.arrow_circle_left_outlined,
@@ -609,7 +604,7 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
                                 Container(
                                   margin: const EdgeInsets.symmetric(
                                       horizontal: 20),
-                                  height:  size.height * 0.04,
+                                  height: size.height * 0.04,
                                   width: double.infinity,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(30),
@@ -656,7 +651,6 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
                                 ),
                                 Expanded(
                                   flex: 3,
-
                                   child: Column(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceAround,
@@ -675,7 +669,6 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
                                           ),
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 6, horizontal: 22),
-
                                           decoration: BoxDecoration(
                                             color: LightColors.kLightYellow,
                                             borderRadius:
@@ -698,7 +691,7 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
                                                         fontWeight:
                                                             FontWeight.bold,
                                                         color: Colors.black,
-                                                          fontSize: 25)),
+                                                        fontSize: 25)),
                                               ),
                                               Padding(
                                                 padding: const EdgeInsets.only(
@@ -734,7 +727,7 @@ class _LanguagesFirstLetterState extends State<LanguagesFirstLetter> {
                     margin: const EdgeInsets.only(left: 20.0, right: 20.0),
                     // padding: const EdgeInsets.all(16),
                     clipBehavior: Clip.hardEdge,
-                    height:  size.height * 0.01,
+                    height: size.height * 0.01,
                     decoration: const BoxDecoration(
                       color: Color(0xffffe0b2),
                       borderRadius: BorderRadius.only(

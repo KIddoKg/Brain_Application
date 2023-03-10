@@ -18,7 +18,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  Firebase.initializeApp();
+  // Firebase.initializeApp();
   //runApp(const MyApp());
 
   final sharedPreferences = await SharedPreferences.getInstance();
