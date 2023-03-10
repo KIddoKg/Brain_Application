@@ -1,408 +1,336 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:brain_application/screens/game/memory/result_screen_m2.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:brain_application/data/data_memory/data_memory_two.dart';
+import 'package:lottie/lottie.dart';
+
+import 'level.dart';
 
 class MemoryTwoScreen extends StatefulWidget {
-  const MemoryTwoScreen({super.key});
+  final String levelValue;
+  const MemoryTwoScreen({required this.levelValue});
 
   @override
   State<MemoryTwoScreen> createState() => _MemoryTwoScreenState();
 }
 
 class _MemoryTwoScreenState extends State<MemoryTwoScreen> {
-  // Popup after each tries
-  Future<void> _showNotify(String title, String content, String contents,
-      String img, Function callback) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => Container(
-        padding: const EdgeInsets.all(10),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            //Alignment at Center
-            Positioned(
-              child: Container(
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(21),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 350,
-                      height: 220,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(21),
-                          // color: Color(0xffe1d7c6),
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFFF9C4), Color(0xFFF9A825)],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Title
-                    Positioned(
-                      // left: 0,
-                      top: 20,
-                      child: Align(
-                        child: SizedBox(
-                          width: 350,
-                          height: 40,
-                          child: Container(
-                            child: Center(
-                              child: Text(
-                                title,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w600,
-                                  decoration: TextDecoration.none,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 0,
-                      top: 60,
-                      child: SizedBox(
-                        height: 115,
-                        width: 350,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Image.asset(
-                              img,
-                              alignment: Alignment.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // content
-                    Positioned(
-                      left: 0,
-                      bottom: 10,
-                      child: Align(
-                        child: SizedBox(
-                          width: 350,
-                          height: 40,
-                          child: Center(
-                            child: AutoSizeText(
-                              content,
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              style: TextStyle(
-                                color: Colors.black,
-                                wordSpacing: 2,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w500,
-                                decoration: TextDecoration.none,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Button
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              top: 580,
-              child: SizedBox(
-                height: 40,
-                width: 330,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xfff49d1a),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: TextButton(
-                    onPressed: () => callback(),
-                    child: Text(
-                      contents,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  bool _showSuccess = false;
+  bool _disableTap = false;
+  bool _showFail = false;
+  bool _end = false;
+  bool _isSwitch = false;
+  Timer? timer;
+  bool _isLoading = false;
+  int? card;
 
-  void winGame() {
-    _showNotify("Điểm: $score", "Số hình đúng: $numOfCard", "Tiếp tục",
-        'assets/medal.png', () {
-      Navigator.of(context).pop();
-      // Navigator.pop(context, back);
-      setState(() {
-        level++;
-        start();
-      });
-    });
-  }
-
-  // void showCorrect() => Fluttertoast.showToast(
-  //     msg: "Chính xác: +200",
-  //     toastLength: Toast.LENGTH_SHORT,
-  //     gravity: ToastGravity.TOP,
-  //     timeInSecForIosWeb: 1,
-  //     backgroundColor: Colors.green,
-  //     textColor: Colors.white,
-  //     fontSize: 16.0);
-  void showCorrect() {
-    Fluttertoast.cancel();
-    Fluttertoast.showToast(
-      msg: "Chính xác: +200",
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.TOP,
-      timeInSecForIosWeb: 1,
-      backgroundColor: Colors.green,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
-  }
-
-  void next() {
-    showCorrect();
-    remain = getImg + pickRandomItemsAsListWithSubList(pairs, 1);
-    pairs.removeWhere((element) => remain.contains(element));
-    getImg = remain;
-    getImg.shuffle();
-    tries++;
-    returnColumn();
-  }
-
-  void endGame() {
-    _showNotify("Điểm: $score", "Số hình đúng: $numOfCard", "Chơi lại",
-        "assets/correct.png", () {
-      Navigator.of(context).pop();
-      setState(() {
-        // start();
-        level = 0;
-        start();
-      });
-    });
-  }
-
+  final double runSpacing = 5;
+  final double spacing = 1;
   int columns = 0;
-  void start() {
-    tries = 0;
-    score = 0;
-    numOfCard = 0;
-    // pairs = getPairs_4();
-    // getImg = pairs;
-    getImg = pickRandomItemsAsListWithSubList(pairs, 3);
-    pairs.removeWhere((element) => getImg.contains(element));
-    returnColumn();
+
+  checkLevelValue() {
+    if (widget.levelValue == "Easy") {
+      pairs = listOfEasy[Random().nextInt(3)];
+    } else if (widget.levelValue == "Medium") {
+      pairs = listOfMedium[Random().nextInt(2)];
+    } else if (widget.levelValue == "Difficult") {
+      pairs = getShape();
+    }
   }
 
-  // 15 Img = 3 Column
-  // 16 Img - 28 Img = 4 column
-  // 29 Img - 50 Img = 5 column
-  returnColumn() {
-    if (getImg.length <= 15) {
+  setCard() {
+    checkLevelValue();
+    if (pairs.length == 80 || pairs.length == 85) {
+      card = 45;
+    } else if (pairs.length == 28) {
+      card = 25;
+    }
+  }
+
+  getColumn() {
+    if (getImg.length <= 12) {
       columns = 3;
-    } else if (getImg.length <= 28) {
+    } else if (getImg.length <= 24) {
       columns = 4;
-    } else if (getImg.length <= 50) {
+    } else if (getImg.length <= 35) {
       columns = 5;
+    } else if (getImg.length <= 50) {
+      columns = 6;
     }
     return columns;
+  }
+
+  start() {
+    _disableTap = false;
+    _isSwitch = true;
+    getImg = pickRandomItemsAsListWithSubList(pairs, 3);
+    getImg.shuffle();
+    getColumn();
+    selectedImageAssetPath = [];
+  }
+
+  next() async {
+    getImg = getImg
+        .where((element) =>
+            selectedImageAssetPath.contains(element.imageAssetPath))
+        .toList();
+    pairs.removeWhere(
+        (element) => selectedImageAssetPath.contains(element.imageAssetPath));
+    getImg += pickRandomItemsAsListWithSubList(pairs, 3);
+    getImg.shuffle();
+    getColumn();
+  }
+
+  getResult() {
+    remain = getImg
+        .where((element) =>
+            !selectedImageAssetPath.contains(element.imageAssetPath))
+        .toList();
+    indicesOfRemain = remain.map((element) => getImg.indexOf(element)).toList();
+    // print("Remain: $remain");
+    print("Indices: $indicesOfRemain");
+    return indicesOfRemain;
+  }
+
+  // navigationPage() {
+  //   setState(() {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => ResultPage()),
+  //     );
+  //   });
+  // }
+
+  Timer? _timerLoad;
+  isLoading() {
+    _isLoading = true;
+    _timerLoad = Timer(Duration(seconds: 1), () {
+      setState(() {
+        next();
+        _isLoading = false;
+        _disableTap = false;
+        next();
+      });
+    });
+  }
+
+  // Animation of success
+  Timer? _timerSuccess;
+  showSuccess() {
+    _showSuccess = true;
+    _timerSuccess = Timer(Duration(seconds: 1), () {
+      setState(() {
+        _showSuccess = false;
+      });
+    });
+  }
+
+  showFail() {
+    _showFail = true;
+    _timerSuccess = Timer(Duration(seconds: 2), () {
+      setState(() {
+        _showFail = false;
+      });
+    });
   }
 
   @override
   void initState() {
     // TODO: implement initState
-    pairs = listOfList[Random().nextInt(4)];
+    tries = 1;
+    // checkLevelValue();
+    setCard();
     start();
     super.initState();
   }
 
-  final double runSpacing = 10;
-  final double spacing = 4;
-
-  bool back = false;
-
-  Future<bool?> showMyDialog(BuildContext context) {
-    return showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Bạn có muốn thoát ra ?'),
-          actions: [
-            TextButton(
-              child: Text('Không'),
-              onPressed: () {
-                back = false;
-                Navigator.pop(context, back);
-              },
-            ),
-            TextButton(
-              child: Text('Có'),
-              onPressed: () {
-                back = true;
-                Navigator.pop(context, back);
-                level = 1;
-              },
-            ),
-          ],
-        );
-      },
-    );
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _timerSuccess!.cancel();
+    timer!.cancel();
+    _timerLoad!.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    double screen_width = MediaQuery.of(context).size.width;
     final w = (MediaQuery.of(context).size.width - runSpacing * (columns - 1)) /
         columns;
-    return WillPopScope(
-        onWillPop: () async {
-          final back = await showMyDialog(context);
-          return back ?? false;
-        },
-        child: SafeArea(
-          child: Scaffold(
-            body: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xffd23369), Color(0xffff597b)],
-                  begin: FractionalOffset(0.5, 1),
-                ),
-              ),
-              width: screen_width,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Color(0xffe5f6fe),
+        body: Container(
+          // width: screen_width,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Icons
+              Row(
+                // crossAxisAlignment: CrossAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Icons
                   Row(
-                    // crossAxisAlignment: CrossAxisAlignment.spaceBetween,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              print("Back Here");
-                              // Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) => const HomePage()));
-                            },
-                            icon: const Icon(Icons.arrow_back_ios),
-                            iconSize: 30,
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              print("Back Here");
-                              // Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) => const HomePage()));
-                            },
-                            icon: const Icon(Icons.lightbulb_outline),
-                            iconSize: 30,
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              print("Back Here");
-                              // Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) => const HomePage()));
-                            },
-                            icon: const Icon(Icons.settings),
-                            iconSize: 30,
-                          ),
-                        ],
+                      IconButton(
+                        onPressed: () {
+                          print("Back Here");
+                          // Navigator.pop(context);
+                          Navigator.pop(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => LevelScreen()));
+                        },
+                        icon: const Icon(Icons.arrow_back_ios),
+                        iconSize: 30,
                       ),
                     ],
                   ),
-                  Expanded(
-                    child: Container(
-                      // decoration: BoxDecoration(color: Colors.amber),
+                  const Text(
+                    "Lượt chơi",
+                    style: TextStyle(
+                      color: Colors.black,
+                      letterSpacing: 1,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      // IconButton(
+                      //   onPressed: () {
+                      //     print("Back Here");
+                      //     // Navigator.push(
+                      //     //     context,
+                      //     //     MaterialPageRoute(
+                      //     //         builder: (context) => const HomePage()));
+                      //   },
+                      //   icon: const Icon(Icons.lightbulb_outline),
+                      //   iconSize: 30,
+                      // ),
+                      IconButton(
+                        onPressed: () {
+                          print("Back Here");
+                          // Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(
+                          //         builder: (context) => const HomePage()));
+                        },
+                        icon: const Icon(Icons.settings),
+                        iconSize: 30,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              // Dashboard
+              Container(
+                // color: Colors.amber,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 20),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Center(
-                            child: Text(
-                              "Lượt chơi:",
-                              style: TextStyle(
-                                fontSize: 30,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
+                          // const Text(
+                          //   "Lượt chơi",
+                          //   style: TextStyle(
+                          //     color: Colors.black,
+                          //     letterSpacing: 1,
+                          //     fontSize: 24,
+                          //     fontWeight: FontWeight.bold,
+                          //   ),
+                          // ),
+                          // SizedBox(
+                          //   height: 20,
+                          // ),
+                          Text(
+                            "$tries/2",
+                            style: const TextStyle(
+                              color: Colors.black,
+                              letterSpacing: 1,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Game
+              _isLoading
+                  ? Expanded(
+                      child: Container(),
+                    )
+                  : Expanded(
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: Wrap(
+                              runSpacing: runSpacing,
+                              spacing: spacing,
+                              alignment: WrapAlignment.center,
+                              children: List.generate(getImg.length, (index) {
+                                getResult();
+                                return SizedBox(
+                                  width: w,
+                                  height: w,
+                                  child: Tile(
+                                    imageAssetPath:
+                                        getImg[index].getImageAssetPath(),
+                                    tileIndex: index,
+                                    parent: this,
+                                    isBorder: indicesOfRemain.contains(index),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ),
+                          Visibility(
+                            visible: _showSuccess,
+                            child: Center(
+                              child: Container(
+                                child: Lottie.asset(
+                                    'assets/animations/success.json',
+                                    height: 200,
+                                    repeat: true,
+                                    reverse: true,
+                                    fit: BoxFit.cover),
                               ),
                             ),
                           ),
-                          Center(
-                            child: Text(
-                              "$level/3",
-                              style: const TextStyle(
-                                fontSize: 30,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
+                          Visibility(
+                            visible: _showFail,
+                            child: Center(
+                              child: Container(
+                                child: Lottie.asset(
+                                  'assets/animations/fail.json',
+                                  height: 200,
+                                  repeat: true,
+                                  reverse: true,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 9,
-                    child: Center(
-                      child: Container(
-                        // decoration: BoxDecoration(color: Colors.blue),
-                        child: Wrap(
-                          runSpacing: runSpacing,
-                          spacing: spacing,
-                          alignment: WrapAlignment.center,
-                          children: List.generate(getImg.length, (index) {
-                            return Container(
-                              width: w,
-                              height: w,
-                              child: Tile(
-                                  imageAssetPath:
-                                      getImg[index].getImageAssetPath(),
-                                  tileIndex: index,
-                                  parent: this),
-                            );
-                          }),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
 
@@ -410,120 +338,168 @@ class Tile extends StatefulWidget {
   String imageAssetPath;
   int tileIndex;
   _MemoryTwoScreenState parent;
+  final bool isBorder;
+
   Tile({
     required this.imageAssetPath,
     required this.tileIndex,
     required this.parent,
+    required this.isBorder,
   });
-  // const Tile({super.key});
 
   @override
   State<Tile> createState() => _TileState();
 }
 
 class _TileState extends State<Tile> {
+  bool _isSelected = false;
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        print("------------");
-        if (!selected) {
-          // setState(() {
-          //   pairs[widget.tileIndex].setIsSelected(true);
-          // });
+      onTap: widget.parent._disableTap
+          ? null
+          : () {
+              if (!selected) {
+                print("Click me");
 
-          checkString = selectedImageAssetPath.where((element) =>
-              element == getImg[widget.tileIndex].getImageAssetPath());
+                selectedTileIndex = widget.tileIndex;
+                print("selectedTileIndex: $selectedTileIndex");
 
-          if (checkString.isEmpty) {
-            // Correct
-            print("Value not exists");
-            print(getImg[widget.tileIndex].getImageAssetPath());
-            // selectedTileIndex.add(widget.tileIndex);
-            selectedImageAssetPath
-                .add(getImg[widget.tileIndex].getImageAssetPath());
+                widget.parent.setState(() {
+                  widget.parent._disableTap = true;
+                });
+                setState(() {
+                  _isSelected = true;
+                });
+                // *Check selectedImageAssetPath exist image
+                // * if exist => Wrong
+                // *else not exist => Correct
+                checkString = selectedImageAssetPath.where((element) =>
+                    element == getImg[widget.tileIndex].getImageAssetPath());
+                print("CheckString: $checkString");
 
-            // if pairs = 8 then selectedImageAssetPath.length = pairs - 2
-            if (selectedImageAssetPath.length == 48) {
-              print("Stop here");
-              selectedImageAssetPath = [];
-              // setState(() {
-              //   score = 0;
-              // });
-              widget.parent.setState(() {
-                // widget.parent.start();
-                if (level == 1) {
-                  bonus = numOfCard * 100;
-                } else if (level == 2) {
-                  bonus = numOfCard * 200;
-                } else if (level == 3) {
-                  bonus = numOfCard * 300;
+                if (checkString.isEmpty) {
+                  // *Correct
+                  print("Correct");
+                  selectedImageAssetPath
+                      .add(getImg[widget.tileIndex].getImageAssetPath());
+
+                  print("selectedImageAssetPath: $selectedImageAssetPath");
+                  print("Length: ${selectedImageAssetPath.length}");
+
+                  if (selectedImageAssetPath.length == widget.parent.card) {
+                    // *All correct (lượt 1)
+                    if (tries < 2) {
+                      // *End Trie
+                      print("END TRIES");
+                      widget.parent.showSuccess();
+                      widget.parent.timer = Timer(Duration(seconds: 1), () {
+                        widget.parent.setState(() {
+                          _isSelected = false;
+                          widget.parent.start();
+                          tries++;
+                        });
+                      });
+                    } else {
+                      // * End games when all correct (lượt 2)
+                      widget.parent.showSuccess();
+                      widget.parent.timer = Timer(Duration(seconds: 2), () {
+                        widget.parent.setState(() {
+                          _isSelected = false;
+                        });
+                      });
+
+                      widget.parent.timer = Timer(Duration(seconds: 3), () {
+                        widget.parent.setState(() {
+                          widget.parent._isSwitch = false;
+                          widget.parent._end = true;
+                        });
+                      });
+
+                      // widget.parent.timer = Timer(Duration(seconds: 5), () {
+                      //   widget.parent.setState(() {
+                      //     widget.parent.navigationPage();
+                      //   });
+                      // });
+                    }
+                  } else {
+                    // *Correct => Continue
+                    widget.parent.showSuccess();
+
+                    widget.parent.timer = Timer(Duration(seconds: 1), () async {
+                      widget.parent.setState(() {
+                        widget.parent.isLoading();
+                        _isSelected = false;
+                      });
+                    });
+                  }
+                } else {
+                  if (tries < 2) {
+                    // *Wrong => END TRIES (lượt 1)
+                    print("Wrong/END TRIES");
+                    widget.parent.showFail();
+                    widget.parent.timer = Timer(Duration(seconds: 2), () {
+                      widget.parent.setState(() {
+                        _isSelected = false;
+                      });
+                    });
+
+                    widget.parent.timer = Timer(Duration(seconds: 3), () {
+                      widget.parent.setState(() {
+                        widget.parent._isSwitch = false;
+                        widget.parent._end = true;
+                      });
+                    });
+
+                    widget.parent.timer = Timer(Duration(seconds: 5), () {
+                      widget.parent.setState(() {
+                        widget.parent.start();
+                        tries++;
+                      });
+                    });
+                  } else {
+                    // * End games when wrong (lượt 2)
+                    widget.parent.showFail();
+                    widget.parent.timer = Timer(Duration(seconds: 2), () {
+                      widget.parent.setState(() {
+                        _isSelected = false;
+                      });
+                    });
+
+                    widget.parent.timer = Timer(Duration(seconds: 3), () {
+                      widget.parent.setState(() {
+                        widget.parent._isSwitch = false;
+                        widget.parent._end = true;
+                      });
+                    });
+
+                    // widget.parent.timer = Timer(Duration(seconds: 5), () {
+                    //   widget.parent.setState(() {
+                    //     widget.parent.navigationPage();
+                    //   });
+                    // });
+                  }
                 }
-                widget.parent.winGame();
-                if (level == 1) {
-                  numOfCard_1 = numOfCard;
-                } else if (level == 2) {
-                  numOfCard_2 = numOfCard;
-                } else if (level == 3) {
-                  numOfCard_3 = numOfCard;
-                }
-              });
-            } else {
-              setState(() {
-                score += 500;
-                numOfCard++;
-              });
-              widget.parent.setState(() {
-                // widget.parent.showCorrect();
-                widget.parent.next();
-              });
-            }
-          } else {
-            // Wrong
-            print("Value exists");
-            selectedImageAssetPath = [];
-
-            widget.parent.setState(() {
-              // widget.parent.start();
-              if (level == 1) {
-                bonus = numOfCard * 100;
-              } else if (level == 2) {
-                bonus = numOfCard * 200;
-              } else if (level == 3) {
-                bonus = numOfCard * 300;
               }
-              widget.parent.winGame();
-
-              if (level == 1) {
-                numOfCard_1 = numOfCard;
-              } else if (level == 2) {
-                numOfCard_2 = numOfCard;
-              } else if (level == 3) {
-                numOfCard_3 = numOfCard;
-              }
-            });
-            if (level < 3) {
-            } else {
-              numOfCard = numOfCard_1 + numOfCard_2 + numOfCard_3;
-              score = numOfCard_1 * 600 + numOfCard_2 * 700 + numOfCard_3 * 800;
-              widget.parent.setState(() {
-                widget.parent.endGame();
-              });
-            }
-          }
-
-          // print(selectedTileIndex);
-          print("bounus: $bonus");
-          print(selectedImageAssetPath);
-          print("You click me");
-        }
-      },
-      child: Container(
-        // margin: EdgeInsets.all(10),
-        child: Card(
-          elevation: 10,
-          child: Image.asset(
-            widget.imageAssetPath,
+            },
+      child: Card(
+        shape: RoundedRectangleBorder(
+          side: widget.parent._isSwitch
+              ? _isSelected
+                  ? BorderSide(color: Colors.blue, width: 3)
+                  : BorderSide.none
+              : widget.parent._end
+                  ? widget.isBorder
+                      ? BorderSide(color: Colors.blue, width: 3)
+                      : BorderSide.none
+                  : BorderSide.none,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Center(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: Image.asset(widget.imageAssetPath),
           ),
         ),
       ),
