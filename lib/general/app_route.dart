@@ -44,6 +44,8 @@ import 'package:brain_application/screens/admin/admin_page.dart';
 
 import 'package:brain_application/screens/setting/Setting_Screen.dart';
 
+import '../screens/game/memory/game_two/level.dart';
+
 class RouteGenerator {
   const RouteGenerator._();
 
@@ -101,7 +103,7 @@ class RouteGenerator {
     //Languages Game
     languageScreen: (context) => const LanguageScreen(),
     gameMemory1: (context) => const GameOne(),
-    gameMemory2: (context) => const LevelsScreen(),
+    gameMemory2: (context) => const LevelScreen(),
     gameMemory3: (context) => const MemoryThreeScreen(),
 
     //Memory Game
