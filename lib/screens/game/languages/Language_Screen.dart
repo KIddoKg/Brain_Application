@@ -12,7 +12,6 @@ class LanguageScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final auth = ref.watch(authProvider);
     int cout = 0;
     return Scaffold(
       body: SafeArea(
@@ -44,19 +43,19 @@ class LanguageScreen extends ConsumerWidget {
                       ),
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            radius: 21,
-                            backgroundColor: const Color(0xff37EBBC),
-                            child: CircleAvatar(
-                              radius: 18,
-                              backgroundImage: NetworkImage(
-                                auth.user.profilePicture,
-                              ),
-                            ),
-                          ),
+                          // CircleAvatar(
+                          //   radius: 21,
+                          //   backgroundColor: const Color(0xff37EBBC),
+                          //   child: CircleAvatar(
+                          //     radius: 18,
+                          //     backgroundImage: NetworkImage(
+                          //       auth.user.profilePicture,
+                          //     ),
+                          //   ),
+                          // ),
                           const SizedBox(width: 5),
                           Text(
-                            '${auth.user.name}',
+                            'Name',
                             style: const TextStyle(
                               color: Color(0xff001663),
                             ),

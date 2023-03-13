@@ -99,7 +99,7 @@ class _SigninFormState extends State<SigninForm> {
             ),
           ),
           Consumer(builder: (context, ref, child) {
-            final auth = ref.read(authProvider);
+            // final auth = ref.read(authProvider);
             return Button(
                 onPressed: () async {
                   setState(() {

@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:brain_application/provider/auth.dart';
@@ -24,7 +23,7 @@ void main() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   runApp(ProviderScope(
     child: MyApp(),
-    overrides: [spProvider.overrideWithValue(sharedPreferences)],
+    // overrides: [spProvider.overrideWithValue(sharedPreferences)],
   ));
 }
 
@@ -35,22 +34,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
-      final auth = ref.watch(authProvider);
-      final futureAuth = ref.watch(futureAuthProvider);
       return MaterialApp(
         debugShowCheckedModeBanner: false,
-        //home: SigninScreen(),
-        home: futureAuth.when(data: (data) {
-          return auth.isAuth ? Homepage() : SigninScreen();
-        }, error: (e, st) {
-          return Scaffold(
-            body: Center(child: Text(e.toString())),
-          );
-        }, loading: () {
-          return Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }),
+        home: SigninScreen(),
+        // home: futureAuth.when(data: (data) {
+        //   return SigninScreen();
+        // }, error: (e, st) {
+        //   return Scaffold(
+        //     body: Center(child: Text(e.toString())),
+        //   );
+        // }, loading: () {
+        //   return Scaffold(
+        //     body: Center(child: CircularProgressIndicator()),
+        //   );
+        // }),
         routes: RouteGenerator.routes,
       );
     });

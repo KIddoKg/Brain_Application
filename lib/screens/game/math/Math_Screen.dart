@@ -3,7 +3,6 @@ import 'package:animator/animator.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:brain_application/general/app_route.dart';
 import 'package:brain_application/provider/auth.dart';
-import 'package:brain_application/provider/room.dart';
 import 'package:brain_application/screens/home/stack_custom.dart';
 import 'package:brain_application/widgets/components/button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,8 +12,6 @@ class MathScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final room = ref.watch(roomProvider);
-    final auth = ref.watch(authProvider);
     return Scaffold(
       body: SafeArea(
         child: Container(
@@ -45,19 +42,19 @@ class MathScreen extends ConsumerWidget {
                       ),
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            radius: 21,
-                            backgroundColor: const Color(0xff37EBBC),
-                            child: CircleAvatar(
-                              radius: 18,
-                              backgroundImage: NetworkImage(
-                                auth.user.profilePicture,
-                              ),
-                            ),
-                          ),
+                          // CircleAvatar(
+                          //   radius: 21,
+                          //   backgroundColor: const Color(0xff37EBBC),
+                          //   child: CircleAvatar(
+                          //     radius: 18,
+                          //     backgroundImage: NetworkImage(
+                          //       auth.user.profilePicture,
+                          //     ),
+                          //   ),
+                          // ),
                           const SizedBox(width: 5),
                           Text(
-                            '${auth.user.name}',
+                            'Name',
                             style: const TextStyle(
                               color: Color(0xff001663),
                             ),
@@ -117,7 +114,6 @@ class MathScreen extends ConsumerWidget {
                       padding: const EdgeInsets.only(top: 25),
                       child: InkWell(
                         onTap: () {
-                          room.initTimeGameMath1();
                           Navigator.of(context)
                               .pushNamed(RouteGenerator.gameMath1);
                         },
@@ -135,7 +131,6 @@ class MathScreen extends ConsumerWidget {
                     ),
                     InkWell(
                       onTap: () {
-                        room.initTimeGameMath2();
                         Navigator.of(context)
                             .pushNamed(RouteGenerator.gameMath2);
                       },

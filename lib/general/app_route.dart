@@ -1,8 +1,5 @@
-import 'package:brain_application/screens/game/math/game_one/Game_Math1_Screen.dart';
-
 import 'package:brain_application/screens/Signin_Screen.dart';
 import 'package:brain_application/screens/Signup_Screen.dart';
-import 'package:brain_application/screens/game/math/game_two/Game_Math2_Screen.dart';
 import 'package:brain_application/screens/game/math/Math_Screen.dart';
 import 'package:brain_application/screens/home/homepage.dart';
 
@@ -98,7 +95,6 @@ class RouteGenerator {
     homepage: (context) => const Homepage(),
     setting: (context) => const SettingsScreen(),
     mathScreen: (context) => const MathScreen(),
-    gameMath1: (context) => const GameMath1Screen(),
 
     //Languages Game
     languageScreen: (context) => const LanguageScreen(),
@@ -132,7 +128,5 @@ class RouteGenerator {
     //admin
 
     admin_page2: (context) => const Adminpage(),
-
-    gameMath2: (context) => const GameMath2Screen(),
   };
 }

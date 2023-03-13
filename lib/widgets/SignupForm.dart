@@ -1,5 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:brain_application/provider/auth.dart';
 import 'package:brain_application/provider/auth_test2.dart';
@@ -207,7 +205,7 @@ class _SignupState extends State<Signup> {
                 },
               ))),
           Consumer(builder: (context, ref, child) {
-            final auth = ref.read(authProvider);
+            // final auth = ref.read(authProvider);
             return Button(
                 onPressed: () {
                   setState(() {
@@ -219,18 +217,18 @@ class _SignupState extends State<Signup> {
                   setState(() {
                     isLoading = true;
                   });
-                  try {
-                    auth.Signup(
-                        name: usernameConntroller.text.trim(),
-                        email: emailConntroller.text,
-                        password: passwordConntroller.text,
-                        Gender: _gender.toString(),
-                        DOB: dateinput.text);
-                  } catch (e) {
-                    setState(() {
-                      isLoading = false;
-                    });
-                  }
+                  // try {
+                  //   auth.Signup(
+                  //       name: usernameConntroller.text.trim(),
+                  //       email: emailConntroller.text,
+                  //       password: passwordConntroller.text,
+                  //       Gender: _gender.toString(),
+                  //       DOB: dateinput.text);
+                  // } catch (e) {
+                  //   setState(() {
+                  //     isLoading = false;
+                  //   });
+                  // }
                 },
                 text: 'Đăng Ký');
           })

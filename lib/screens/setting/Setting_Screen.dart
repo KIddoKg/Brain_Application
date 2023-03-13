@@ -10,7 +10,6 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final auth = ref.watch(authProvider);
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -58,7 +57,8 @@ class SettingsScreen extends ConsumerWidget {
                     backgroundColor: Colors.white,
                     radius: 30,
                     child: ClipOval(
-                        child: Image.network(auth.user.profilePicture)),
+                        // child: Image.network(auth.user.profilePicture)
+                        ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 20),
@@ -66,7 +66,7 @@ class SettingsScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          auth.user.name ?? '',
+                          '',
                           style: const TextStyle(
                               color: Colors.black,
                               fontSize: 18,
@@ -76,7 +76,7 @@ class SettingsScreen extends ConsumerWidget {
                           height: 10,
                         ),
                         Text(
-                          auth.user.email ?? '',
+                          '',
                           style: const TextStyle(
                               color: Color(0xff9B9898), fontSize: 15),
                         ),
@@ -150,7 +150,7 @@ class SettingsScreen extends ConsumerWidget {
                         Navigator.pop(context);
                         Navigator.pushReplacementNamed(
                             context, RouteGenerator.signin);
-                        await auth.logout();
+                        // await auth.logout();
                       },
                       title: 'Đăng xuất',
                       icon: Icons.logout_outlined,
